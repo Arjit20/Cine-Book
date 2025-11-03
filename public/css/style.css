@@ -1,0 +1,524 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #FFFFFF;
+  color: #2D3748;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.cinema-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.cinema-header h1 {
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: #2D3748;
+  margin-bottom: 10px;
+}
+
+.show-details {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #718096;
+  margin-bottom: 20px;
+}
+
+.screen-container {
+  perspective: 1200px;
+  margin-bottom: 30px;
+}
+
+.screen {
+  width: 85%;
+  max-width: 800px;
+  height: 80px;
+  margin: 0 auto;
+  background: linear-gradient(to bottom, #D1D5DB 0%, #E2E8F0 100%);
+  border-radius: 40px / 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #2D3748;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transform: rotateX(15deg) skew(-5deg);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #CBD5E0;
+  z-index: 2;
+}
+
+.screen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0) 60%);
+  z-index: 1;
+}
+
+.seat-wrapper {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 20px;
+  background: #FFFFFF;
+  position: relative;
+  z-index: 2;
+}
+
+.seat-grid {
+  display: grid;
+  grid-template-columns: 20px repeat(14, 1fr);
+  grid-gap: 8px 6px;
+  padding: 20px;
+  transform-origin: center;
+  background: transparent;
+  transition: transform 0.5s ease;
+}
+
+.seat-grid.theater-view {
+  transform: perspective(1200px) rotateX(10deg) rotateY(5deg) scale(1.5);
+  background: linear-gradient(to bottom, #1A202C 0%, #2D3748 100%);
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
+  border: none;
+}
+
+.row-label {
+  grid-column: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 0.8rem;
+  color: #718096;
+  padding-right: 5px;
+}
+
+.seat {
+  width: 30px;
+  height: 30px;
+  border-radius: 3px;
+  background: #F7FAFC;
+  border: 1px solid #CBD5E0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #2D3748;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  transform: translateZ(0);
+}
+
+.seat.vip {
+  border-color: #F687B3;
+  background: #FFF5F7;
+}
+
+.seat.available:hover:not(.booked) {
+  transform: scale(1.1) translateZ(0);
+  border-color: #4FD1C5;
+}
+
+.seat.selected {
+  background: #4FD1C5;
+  border-color: #4FD1C5;
+  color: #FFFFFF;
+  transform: scale(1.05) translateZ(0);
+}
+
+.seat.booked {
+  background: #2D3748;
+  border-color: #2D3748;
+  cursor: not-allowed;
+  color: #E2E8F0;
+}
+
+.seat[data-tooltip]:hover:after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #FFFFFF;
+  color: #2D3748;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.6rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  border: 5px solid #E2E8F0;
+  border-top: 5px solid #4FD1C5;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 100;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin: 20px 0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #2D3748;
+}
+
+.booking-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 600px;
+  margin: 25px auto;
+  padding: 15px;
+  background: #F9FAFB;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #E5E7EB;
+}
+
+.summary-details {
+  display: flex;
+  gap: 20px;
+  font-size: 1.1rem;
+  color: #2D3748;
+}
+
+.summary-details p {
+  margin: 0;
+}
+
+.summary-actions {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+#confirmBtn {
+  background: #F687B3;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+#confirmBtn:hover:not(:disabled) {
+  background: #F78BA2;
+  transform: scale(1.05);
+}
+
+#confirmBtn:disabled {
+  background: #E5E7EB;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+#resetBtn {
+  background: #CBD5E0;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #2D3748;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#resetBtn:hover {
+  background: #B8C4D3;
+}
+
+#toggle3D {
+  background: #4FD1C5;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#toggle3D:hover {
+  background: #3FB7AB;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeInModal 0.3s ease;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #FFFFFF;
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  width: 450px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  overflow: visible;
+}
+
+.close {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  font-size: 24px;
+  cursor: pointer;
+  color: #718096;
+  transition: color 0.2s ease;
+}
+
+.close:hover {
+  color: #4FD1C5;
+}
+
+.carousel-container {
+  margin: 25px 0;
+  position: relative;
+  height: 50px;
+  overflow: visible;
+}
+
+.carousel-wrapper {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.carousel {
+  display: flex;
+  width: 300%;
+  transition: transform 0.5s ease;
+  align-items: center;
+}
+
+.carousel-item {
+  flex: 0 0 calc(100% / 15);
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F7FAFC;
+  border: 2px solid #CBD5E0;
+  margin: 0 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2D3748;
+  border-radius: 50%;
+  width: 40px;
+  line-height: 40px;
+  transition: all 0.3s ease;
+}
+
+.carousel-item:hover {
+  background: #E5E7EB;
+  transform: scale(1.1);
+}
+
+.carousel-item.selected {
+  background: #4FD1C5;
+  border-color: #4FD1C5;
+  color: #FFFFFF;
+  transform: scale(1.2);
+}
+
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #4FD1C5;
+  border: none;
+  padding: 8px;
+  border-radius: 50%;
+  color: #FFFFFF;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  z-index: 10;
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-nav.prev {
+  left: -10px;
+}
+
+.carousel-nav.next {
+  right: -10px;
+}
+
+.carousel-nav:hover {
+  background: #3FB7AB;
+}
+
+.carousel-nav:disabled {
+  background: #E5E7EB;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+#confirmSeatCount {
+  background: #F687B3;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+  margin-top: 20px;
+}
+
+#confirmSeatCount:hover:not(:disabled) {
+  background: #F78BA2;
+  transform: scale(1.05);
+}
+
+#confirmSeatCount:disabled {
+  background: #E5E7EB;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.seat-limit {
+  font-size: 1rem;
+  color: #718096;
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .cinema-container {
+    padding: 15px;
+  }
+  .cinema-header h1 {
+    font-size: 1.6rem;
+  }
+  .show-details {
+    font-size: 0.9rem;
+  }
+  .screen {
+    width: 90%;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+  .seat {
+    width: 25px;
+    height: 25px;
+    font-size: 0.6rem;
+  }
+  .booking-summary {
+    max-width: 400px;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .summary-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  #confirmBtn, #resetBtn, #toggle3D {
+    width: 100%;
+  }
+  .modal-content {
+    width: 300px;
+    padding: 15px;
+  }
+  .carousel-item {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+    line-height: 30px;
+    margin: 0 3px;
+  }
+  .carousel-container {
+    height: 40px;
+    margin: 15px 0;
+  }
+  .carousel-nav {
+    height: 30px;
+    width: 30px;
+    padding: 6px;
+  }
+  .carousel-nav.prev {
+    left: -5px;
+  }
+  .carousel-nav.next {
+    right: -5px;
+  }
+  #confirmSeatCount {
+    margin-top: 15px;
+  }
+}

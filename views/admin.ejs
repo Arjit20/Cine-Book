@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CINE-BOOK Admin Panel</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f172a; color: #f1f5f9; font-family: 'Poppins', sans-serif; }
+    .admin-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .admin-header { text-align: center; margin-bottom: 30px; }
+    .admin-header h1 { color: #14b8a6; font-size: 2.5rem; margin-bottom: 10px; }
+    .admin-nav { display: flex; gap: 15px; margin-bottom: 30px; justify-content: center; }
+    .nav-btn { padding: 12px 24px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; cursor: pointer; transition: all 0.3s; }
+    .nav-btn.active, .nav-btn:hover { background: #14b8a6; border-color: #14b8a6; }
+    .admin-section { display: none; background: #1e293b; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .admin-section.active { display: block; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; color: #94a3b8; font-weight: 500; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #334155; border-radius: 8px; background: #0f172a; color: #f1f5f9; }
+    .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+    .btn-primary { background: #14b8a6; color: #0f172a; }
+    .btn-primary:hover { background: #0d9488; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-success { background: #22c55e; color: white; }
+    .btn-success:hover { background: #16a34a; }
+    .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .movie-card { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 20px; }
+    .movie-card h3 { color: #14b8a6; margin-bottom: 10px; }
+    .movie-card p { color: #94a3b8; margin-bottom: 8px; }
+    .movie-actions { display: flex; gap: 10px; margin-top: 15px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: #1e293b; border-radius: 12px; padding: 20px; text-align: center; }
+    .stat-card h3 { color: #14b8a6; font-size: 2rem; margin-bottom: 10px; }
+    .stat-card p { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="admin-header">
+      <h1>🎬 CINE-BOOK Admin Panel</h1>
+      <p>Manage movies, shows, and bookings</p>
+    </div>
+
+    <div class="admin-nav">
+      <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="showSection('movies')">Movies</button>
+      <button class="nav-btn" onclick="showSection('shows')">Shows</button>
+      <button class="nav-btn" onclick="showSection('bookings')">Bookings</button>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="admin-section active">
+      <h2>📊 Dashboard Overview</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3 id="totalMovies">0</h3>
+          <p>Total Movies</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="totalShows">0</h3>
+          <p>Active Shows</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="totalBookings">0</h3>
+          <p>Total Bookings</p>
+        </div>
+        <div class="stat-card">
+          <h3 id="totalRevenue">₹0</h3>
+          <p>Total Revenue</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Movies Section -->
+    <div id="movies" class="admin-section">
+      <h2>🎬 Movie Management</h2>
+      
+      <div class="form-group">
+        <h3>Add New Movie</h3>
+        <form id="movieForm">
+          <div class="form-group">
+            <label>Movie Title</label>
+            <input type="text" id="movieTitle" required>
+          </div>
+          <div class="form-group">
+            <label>Genre</label>
+            <input type="text" id="movieGenre" required>
+          </div>
+          <div class="form-group">
+            <label>Language</label>
+            <input type="text" id="movieLanguage" required>
+          </div>
+          <div class="form-group">
+            <label>Duration (minutes)</label>
+            <input type="number" id="movieDuration" required>
+          </div>
+          <div class="form-group">
+            <label>Rating</label>
+            <input type="number" id="movieRating" step="0.1" min="0" max="10" required>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="movieDescription" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Poster URL</label>
+            <input type="url" id="moviePoster" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Add Movie</button>
+        </form>
+      </div>
+
+      <div class="movie-grid" id="moviesList">
+        <!-- Movies will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Shows Section -->
+    <div id="shows" class="admin-section">
+      <h2>🎭 Show Management</h2>
+      
+      <div class="form-group">
+        <h3>Add New Show</h3>
+        <form id="showForm">
+          <div class="form-group">
+            <label>Select Movie</label>
+            <select id="showMovie" required>
+              <option value="">Choose a movie...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Show Time</label>
+            <input type="text" id="showTime" placeholder="e.g., 10:00 AM" required>
+          </div>
+          <div class="form-group">
+            <label>Price per Seat</label>
+            <input type="number" id="showPrice" min="100" max="2000" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Add Show</button>
+        </form>
+      </div>
+
+      <div id="showsList">
+        <!-- Shows will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Bookings Section -->
+    <div id="bookings" class="admin-section">
+      <h2>🎫 Booking Management</h2>
+      <div id="bookingsList">
+        <!-- Bookings will be loaded here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Admin panel functionality
+    function showSection(sectionId) {
+      document.querySelectorAll('.admin-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      
+      document.getElementById(sectionId).classList.add('active');
+      event.target.classList.add('active');
+      
+      // Load data for the section
+      if (sectionId === 'dashboard') loadDashboard();
+      else if (sectionId === 'movies') loadMovies();
+      else if (sectionId === 'shows') loadShows();
+      else if (sectionId === 'bookings') loadBookings();
+    }
+
+    async function loadDashboard() {
+      try {
+        const [moviesRes, showsRes, bookingsRes] = await Promise.all([
+          fetch('/api/movies'),
+          fetch('/api/shows'),
+          fetch('/api/bookings')
+        ]);
+        
+        const movies = await moviesRes.json();
+        const shows = await showsRes.json();
+        const bookings = await bookingsRes.json();
+        
+        document.getElementById('totalMovies').textContent = movies.length;
+        document.getElementById('totalShows').textContent = shows.length;
+        document.getElementById('totalBookings').textContent = bookings.length;
+        
+        const totalRevenue = bookings.reduce((sum, booking) => sum + booking.totalAmount, 0);
+        document.getElementById('totalRevenue').textContent = `₹${totalRevenue}`;
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      }
+    }
+
+    async function loadMovies() {
+      try {
+        const response = await fetch('/api/movies');
+        const movies = await response.json();
+        
+        const moviesList = document.getElementById('moviesList');
+        moviesList.innerHTML = movies.map(movie => `
+          <div class="movie-card">
+            <h3>${movie.title}</h3>
+            <p><strong>Genre:</strong> ${movie.genre}</p>
+            <p><strong>Language:</strong> ${movie.language}</p>
+            <p><strong>Duration:</strong> ${movie.duration} mins</p>
+            <p><strong>Rating:</strong> ${movie.rating}/10</p>
+            <div class="movie-actions">
+              <button class="btn btn-success" onclick="editMovie('${movie._id}')">Edit</button>
+              <button class="btn btn-danger" onclick="deleteMovie('${movie._id}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading movies:', error);
+      }
+    }
+
+    async function loadShows() {
+      try {
+        const [moviesRes, showsRes] = await Promise.all([
+          fetch('/api/movies'),
+          fetch('/api/shows')
+        ]);
+        
+        const movies = await moviesRes.json();
+        const shows = await showsRes.json();
+        
+        // Populate movie dropdown
+        const movieSelect = document.getElementById('showMovie');
+        movieSelect.innerHTML = '<option value="">Choose a movie...</option>' + 
+          movies.map(movie => `<option value="${movie._id}">${movie.title}</option>`).join('');
+        
+        // Display shows
+        const showsList = document.getElementById('showsList');
+        showsList.innerHTML = shows.map(show => `
+          <div class="movie-card">
+            <h3>${show.movieTitle || 'Unknown Movie'}</h3>
+            <p><strong>Time:</strong> ${show.timing || show.showTime}</p>
+            <p><strong>Price:</strong> ₹${show.price || 250}</p>
+            <p><strong>Booked Seats:</strong> ${show.bookedSeats ? show.bookedSeats.length : 0}</p>
+            <div class="movie-actions">
+              <button class="btn btn-danger" onclick="deleteShow('${show._id}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading shows:', error);
+      }
+    }
+
+    async function loadBookings() {
+      try {
+        const response = await fetch('/api/bookings');
+        const bookings = await response.json();
+        
+        const bookingsList = document.getElementById('bookingsList');
+        bookingsList.innerHTML = bookings.map(booking => `
+          <div class="movie-card">
+            <h3>Ticket: ${booking.ticketId}</h3>
+            <p><strong>Movie:</strong> ${booking.movieTitle || 'Unknown'}</p>
+            <p><strong>Seats:</strong> ${booking.seats.join(', ')}</p>
+            <p><strong>Time:</strong> ${booking.showTime}</p>
+            <p><strong>Amount:</strong> ₹${booking.totalAmount}</p>
+            <p><strong>Phone:</strong> ${booking.phoneNumber}</p>
+            <p><strong>Date:</strong> ${new Date(booking.bookingDate).toLocaleDateString()}</p>
+            <div class="movie-actions">
+              <button class="btn btn-danger" onclick="cancelBooking('${booking._id}')">Cancel</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading bookings:', error);
+      }
+    }
+
+    // Form submissions
+    document.getElementById('movieForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const movieData = {
+        title: document.getElementById('movieTitle').value,
+        genre: document.getElementById('movieGenre').value,
+        language: document.getElementById('movieLanguage').value,
+        duration: parseInt(document.getElementById('movieDuration').value),
+        rating: parseFloat(document.getElementById('movieRating').value),
+        description: document.getElementById('movieDescription').value,
+        posterUrl: document.getElementById('moviePoster').value
+      };
+      
+      try {
+        const response = await fetch('/api/movies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(movieData)
+        });
+        
+        if (response.ok) {
+          alert('Movie added successfully!');
+          document.getElementById('movieForm').reset();
+          loadMovies();
+        } else {
+          alert('Error adding movie');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding movie');
+      }
+    });
+
+    document.getElementById('showForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const showData = {
+        movieId: document.getElementById('showMovie').value,
+        timing: document.getElementById('showTime').value,
+        price: parseInt(document.getElementById('showPrice').value)
+      };
+      
+      try {
+        const response = await fetch('/api/shows', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(showData)
+        });
+        
+        if (response.ok) {
+          alert('Show added successfully!');
+          document.getElementById('showForm').reset();
+          loadShows();
+        } else {
+          alert('Error adding show');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding show');
+      }
+    });
+
+    // Initialize dashboard on load
+    loadDashboard();
+  </script>
+</body>
+</html>
