@@ -16,6 +16,7 @@
       min-height: 100vh;
       color: #e6fbff;
       background: radial-gradient(1200px 600px at 50% -10%, rgba(0,188,212,0.18), transparent 60%), #0e1318;
+      transition: transform .5s ease, filter .5s ease;
     }
 
     .cinema-header { text-align: center; margin-bottom: 18px; }
@@ -24,7 +25,7 @@
     .seat-limit { font-size: 1rem; color: #ffb84d; margin: 10px 0; }
 
     /* Curved screen with glow */
-    .screen-container { text-align: center; margin: 28px 0 18px; }
+    .screen-container { text-align: center; margin: 28px 0 18px; perspective: 1200px; }
     .screen {
       width: min(82%, 920px);
       height: 22px;
@@ -32,21 +33,23 @@
       background: linear-gradient(90deg, #eafcff, #bdefff);
       border-radius: 50% / 100% 100% 0 0;
       box-shadow: 0 10px 40px rgba(0, 188, 212, 0.45), inset 0 -6px 10px rgba(0,0,0,0.2);
+      transform-origin: center bottom;
+      transition: transform .6s ease, box-shadow .6s ease, filter .6s ease;
     }
 
     /* Accessible seating grid (A-H, 10 seats/row) */
-    .seating { width:min(820px,100%); margin:26px auto 12px; display:grid; gap:.6rem; }
-    .row { display:grid; grid-template-columns:auto repeat(5,1fr) 18px repeat(5,1fr) auto; align-items:center; gap:.6rem; position:relative; }
+    .seating { width:min(820px,100%); margin:26px auto 12px; display:grid; gap:.6rem; transition: transform .6s ease, filter .6s ease; transform-style: preserve-3d; }
+    .row { display:grid; grid-template-columns:auto repeat(5,1fr) 18px repeat(5,1fr) auto; align-items:center; gap:.6rem; position:relative; transform-style: preserve-3d; }
     .row::before { content:""; position:absolute; left:28px; right:28px; top:-8px; height:0; border-top:1px solid rgba(255,255,255,.06); border-radius:999px; }
     .row-label { width:28px; text-align:center; color:#bfe9f0; font-size:.85rem; }
     .seat { display:flex; align-items:center; justify-content:center; }
     .sr-only{ position:absolute!important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
-    .seat label { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:36px; height:32px; border-radius:6px 6px 10px 10px; border:2px solid #18c37e; transition:transform .12s ease, box-shadow .18s ease, background .18s ease; background:linear-gradient(180deg, rgba(24,195,126,.1), rgba(24,195,126,.05)); position:relative; font-size:10px; font-weight:600; }
+    .seat label { cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:36px; height:32px; border-radius:6px 6px 10px 10px; border:2px solid #18c37e; transition:transform .18s ease, box-shadow .22s ease, background .2s ease, filter .2s ease; background:linear-gradient(180deg, rgba(24,195,126,.14), rgba(24,195,126,.06)); position:relative; font-size:10px; font-weight:600; transform-style:preserve-3d; }
     .seat label::before{ content:""; position:absolute; top:-8px; width:70%; height:8px; border-radius:6px; background:currentColor; opacity:.15; filter:blur(4px); }
-    .seat label::after{ content:""; position:absolute; bottom:-4px; width:60%; height:4px; border-radius:999px; background:#000; opacity:.25; filter:blur(3px); }
-    .seat label:hover{ transform:translateY(-1px); box-shadow:0 8px 16px rgba(24,195,126,.18); background:linear-gradient(180deg, rgba(24,195,126,.18), rgba(24,195,126,.06)); }
-    .seat input:checked + label{ background:linear-gradient(180deg,#22c1ff,#1ea4ff); border-color:#1ea4ff; box-shadow:0 10px 20px rgba(30,164,255,.28); color:#002b3a; }
-    .seat input[disabled] + label{ cursor:not-allowed; border-color:#334155; background:rgba(51,65,85,.35); color:rgba(241,245,249,.45); }
+    .seat label::after{ content:""; position:absolute; bottom:-4px; width:60%; height:4px; border-radius:999px; background:#000; opacity:.25; filter:blur(3px); transform: translateZ(-2px); }
+    .seat label:hover{ transform:translateY(-1px) translateZ(2px); box-shadow:0 10px 18px rgba(24,195,126,.2); background:linear-gradient(180deg, rgba(24,195,126,.2), rgba(24,195,126,.08)); }
+    .seat input:checked + label{ background:linear-gradient(180deg,#22c1ff,#1ea4ff); border-color:#1ea4ff; box-shadow:0 16px 28px rgba(30,164,255,.32); color:#002b3a; transform: translateY(-2px) translateZ(4px); filter: saturate(1.15); }
+    .seat input[disabled] + label{ cursor:not-allowed; border-color:#334155; background:rgba(51,65,85,.35); color:rgba(241,245,249,.45); transform: translateZ(0); filter: grayscale(.15); }
     .row.vip .seat label{ border-color:#ffb347; background:linear-gradient(180deg, rgba(255,179,71,.16), rgba(255,179,71,.08)); }
     .row.vip .seat input:checked + label{ background:linear-gradient(180deg,#ffd04d,#ff9f3d); color:#2b1d00; box-shadow:0 12px 22px rgba(255,159,61,.35); }
     .aisle{ width:18px; height:100%; }
@@ -152,6 +155,30 @@
     .movie-info h2 {
       color: #00bcd4;
       margin-bottom: 10px;
+    }
+    
+    /* 3D MODE */
+    body.view-3d .cinema-container { filter: saturate(1.05) contrast(1.02); }
+    body.view-3d .screen { transform: rotateX(25deg) translateZ(20px); box-shadow: 0 20px 70px rgba(0, 188, 212, 0.5), 0 0 120px rgba(0, 188, 212, 0.22); }
+    body.view-3d .seating { transform: rotateX(38deg) translateY(-8px); filter: drop-shadow(0 30px 40px rgba(0,0,0,.45)); }
+    body.view-3d .row:nth-child(1) { transform: translateZ(80px); }
+    body.view-3d .row:nth-child(2) { transform: translateZ(64px); }
+    body.view-3d .row:nth-child(3) { transform: translateZ(48px); }
+    body.view-3d .row:nth-child(4) { transform: translateZ(32px); }
+    body.view-3d .row:nth-child(5) { transform: translateZ(16px); }
+    body.view-3d .row:nth-child(6) { transform: translateZ(0); }
+    body.view-3d .row:nth-child(7) { transform: translateZ(-12px); }
+    body.view-3d .row:nth-child(8) { transform: translateZ(-24px); }
+    body.view-3d .seats-container { box-shadow: 0 30px 80px rgba(0,0,0,0.65), inset 0 0 60px rgba(0,188,212,0.05); }
+    body.view-3d .cinema-container:after { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 35vh; background: radial-gradient(80% 60% at 50% 100%, rgba(0,188,212,.08), rgba(0,0,0,.0) 60%); pointer-events: none; }
+
+    /* Responsive 3D adjustments */
+    @media (max-width: 640px) {
+      body.view-3d .seating { transform: rotateX(36deg) translateY(-4px) scale(.95); }
+      body.view-3d .row:nth-child(1) { transform: translateZ(56px); }
+      body.view-3d .row:nth-child(2) { transform: translateZ(44px); }
+      body.view-3d .row:nth-child(3) { transform: translateZ(32px); }
+      body.view-3d .row:nth-child(4) { transform: translateZ(20px); }
     }
   </style>
 </head>
@@ -333,16 +360,13 @@
 
     async function hardResetSelection() {
       try {
-        // Pehle sab selected seats ko uncheck karo
-        selectedSeats.forEach(seatId => {
-          const checkbox = document.getElementById(seatId);
-          if (checkbox && !checkbox.disabled) {
-            checkbox.checked = false;
-          }
-        });
+        // Force-uncheck ALL seat checkboxes (even if state got desynced)
+        const allInputs = seatingGrid.querySelectorAll('input[type="checkbox"]');
+        allInputs.forEach(input => { if (!input.disabled) input.checked = false; });
         
         // Clear local selection
         selectedSeats = [];
+        updateSummary();
         
         // Reload booked seats from server (handles post-book updates)
         const showId = '<%= show && show._id ? show._id : "" %>';
@@ -385,7 +409,7 @@
     // 3D Toggle functionality
     toggle3DBtn.addEventListener('click', () => {
       document.body.classList.toggle('view-3d');
-      alert('3D view toggled!');
+      toggle3DBtn.textContent = document.body.classList.contains('view-3d') ? 'Disable 3D Theater View' : 'Enable 3D Theater View';
     });
 
     // MODIFIED CONFIRM BUTTON WITH BACKEND INTEGRATION AND SMS
