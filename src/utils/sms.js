@@ -21,10 +21,22 @@ Total: ₹${totalAmount}
 Thank you for booking with CINE-BOOK!
 Enjoy your movie! 🍿`;
 
+    // Choose Twilio sender config: prefer Messaging Service SID, else From phone number
+    const hasMessagingServiceSid = Boolean(process.env.TWILIO_MESSAGING_SERVICE_SID);
+    const hasFromNumber = Boolean(process.env.TWILIO_PHONE_NUMBER);
+
+    if (!hasMessagingServiceSid && !hasFromNumber) {
+      throw new Error("Twilio configuration missing: set TWILIO_PHONE_NUMBER or TWILIO_MESSAGING_SERVICE_SID in .env");
+    }
+
+    const senderConfig = hasMessagingServiceSid
+      ? { messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID }
+      : { from: process.env.TWILIO_PHONE_NUMBER };
+
     const result = await client.messages.create({
       body: message,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phoneNumber
+      to: phoneNumber,
+      ...senderConfig
     });
 
     console.log('SMS sent successfully:', result.sid);

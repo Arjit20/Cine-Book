@@ -17,13 +17,12 @@ router.post('/register', async (req, res, next) => {
     await user.save();
 
     const token = generateToken(user);
-
     res.cookie('token', token, {
       httpOnly: true,
-      secure: false, // true in prod
+      secure: false, // change to true in production
     });
 
-    res.status(201).json({ token });
+    res.status(201).json({ message: 'User registered successfully', token });
   } catch (error) {
     next(error);
   }
@@ -44,8 +43,9 @@ router.post('/login', async (req, res) => {
       return res.status(401).send('Invalid credentials');
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.cookie('token', token, { httpOnly: true });
+
     res.redirect(req.query.redirect || '/movies');
   } catch (error) {
     console.error('Login error:', error);
@@ -53,11 +53,11 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// ✅ Logout
+// Logout
 router.get('/logout', (req, res) => {
   res.clearCookie('token');
   req.user = null;
-  res.redirect('/movies');
+  res.redirect('/login');
 });
 
 export default router;

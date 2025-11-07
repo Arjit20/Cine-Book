@@ -3,6 +3,7 @@ import Show from "../models/show.models.js";
 import Movie from "../models/movie.models.js";
 import Booking from "../models/booking.models.js";
 import { sendTicketSMS } from "../utils/sms.js";
+import { requireAuth } from "../utils/auth.js";
 
 const router = express.Router();
 
@@ -38,7 +39,7 @@ router.get("/seats/:showId", async (req, res, next) => {
 });
 
 // MODIFIED BOOKING ROUTE - FIXED VERSION WITH SMS
-router.post("/book", async (req, res, next) => {
+router.post("/book", requireAuth, async (req, res, next) => {
   try {
     const { showId, seats, userPhone, userEmail } = req.body;
     console.log("Booking seats:", seats, "for show:", showId);
@@ -70,6 +71,21 @@ router.post("/book", async (req, res, next) => {
     const seatPrice = show.price || 250;
     const totalAmount = seats.length * seatPrice;
 
+    // Normalize phone to E.164 (default to +91 if 10-digit local)
+    let normalizedPhone = 'N/A';
+    if (userPhone && typeof userPhone === 'string') {
+      const digits = userPhone.replace(/\D/g, '');
+      if (digits.length === 10) {
+        normalizedPhone = `+91${digits}`;
+      } else if (digits.length === 11 && digits.startsWith('0')) {
+        normalizedPhone = `+91${digits.slice(1)}`;
+      } else if (digits.length === 12 && digits.startsWith('91')) {
+        normalizedPhone = `+${digits}`;
+      } else if (userPhone.trim().startsWith('+')) {
+        normalizedPhone = userPhone.trim();
+      }
+    }
+
     // Create booking record
     const booking = new Booking({
       userId: req.user ? req.user._id : null,
@@ -79,7 +95,7 @@ router.post("/book", async (req, res, next) => {
       totalAmount: totalAmount,
       showDate: new Date(),
       showTime: show.timing || show.showTime || '10:00 AM',
-      phoneNumber: userPhone || req.user?.phone || 'N/A',
+      phoneNumber: normalizedPhone || req.user?.phone || 'N/A',
       email: userEmail || req.user?.email || 'N/A'
     });
 
@@ -101,9 +117,9 @@ router.post("/book", async (req, res, next) => {
 
     if (result.modifiedCount === 1) {
       // Send SMS ticket
-      if (userPhone || req.user?.phone) {
+      if (normalizedPhone !== 'N/A' || req.user?.phone) {
         const smsResult = await sendTicketSMS(
-          userPhone || req.user.phone,
+          normalizedPhone || req.user.phone,
           {
             ticketId: booking.ticketId,
             movieTitle: movie.title,
@@ -131,6 +147,36 @@ router.post("/book", async (req, res, next) => {
 
   } catch (err) {
     console.error("Error booking seats:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// NEW ROUTE: Cancel a booking by ticketId (releases seats)
+router.post("/cancel-booking", async (req, res, next) => {
+  try {
+    const { ticketId } = req.body;
+    if (!ticketId) {
+      return res.status(400).json({ error: "ticketId is required" });
+    }
+
+    const booking = await Booking.findOne({ ticketId });
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found" });
+    }
+
+    // Release seats from the show
+    await Show.updateOne(
+      { _id: booking.showId },
+      { $pull: { bookedSeats: { $in: booking.seats } } }
+    );
+
+    // Mark booking cancelled
+    booking.status = 'cancelled';
+    await booking.save();
+
+    return res.json({ success: true, message: 'Booking cancelled and seats released.' });
+  } catch (err) {
+    console.error('Error cancelling booking:', err);
     res.status(500).json({ error: err.message });
   }
 });

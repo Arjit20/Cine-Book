@@ -237,6 +237,10 @@
         <button id="confirmBtn" type="button" disabled>Book Now</button>
         <button id="toggle3D">Toggle 3D Theater View</button>
       </div>
+      <div style="margin-top:14px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <input id="cancelTicketId" type="text" placeholder="Enter Ticket ID to cancel" style="padding:10px;border-radius:8px;border:1px solid #555;background:#333;color:#fff;min-width:280px;">
+        <button id="cancelBookingBtn" type="button" style="background: linear-gradient(180deg,#ff6b6b,#e63946); color:#1b0f00;">Cancel Booking</button>
+      </div>
     </div>
   </div>
 
@@ -418,7 +422,7 @@
         try {
           const showId = '<%= show && show._id ? show._id : "" %>';
           const phoneInput = document.getElementById('phoneInput');
-          const userPhone = phoneInput.value.trim();
+          let userPhone = phoneInput.value.trim();
           
           if (!showId) {
             alert('❌ Error: Show information not found');
@@ -427,6 +431,22 @@
 
           if (!userPhone) {
             alert('📱 Please enter your phone number to receive SMS ticket');
+            phoneInput.focus();
+            return;
+          }
+
+          // Normalize common local formats to E.164 (+91 default for 10-digit)
+          const digits = userPhone.replace(/\D/g, '');
+          if (digits.length === 10) {
+            userPhone = `+91${digits}`;
+          } else if (digits.length === 11 && digits.startsWith('0')) {
+            userPhone = `+91${digits.slice(1)}`;
+          } else if (digits.length === 12 && digits.startsWith('91')) {
+            userPhone = `+${digits}`;
+          }
+          const e164 = /^\+[1-9]\d{7,14}$/;
+          if (!e164.test(userPhone)) {
+            alert('Please enter a valid phone number (e.g. +919876543210)');
             phoneInput.focus();
             return;
           }
@@ -468,6 +488,33 @@
           confirmBtn.disabled = false;
           confirmBtn.textContent = 'Book Now';
         }
+      }
+    });
+
+    // Cancel booking handler
+    document.getElementById('cancelBookingBtn').addEventListener('click', async () => {
+      const ticketId = document.getElementById('cancelTicketId').value.trim();
+      if (!ticketId) {
+        alert('Please enter a Ticket ID to cancel.');
+        return;
+      }
+      try {
+        const resp = await fetch('/cancel-booking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ticketId })
+        });
+        const data = await resp.json();
+        if (data.success) {
+          alert('✅ ' + data.message);
+          document.getElementById('cancelTicketId').value = '';
+          await hardResetSelection();
+        } else {
+          alert('❌ ' + (data.error || 'Failed to cancel booking'));
+        }
+      } catch (e) {
+        console.error('Cancel booking error:', e);
+        alert('❌ Network error while cancelling booking');
       }
     });
 

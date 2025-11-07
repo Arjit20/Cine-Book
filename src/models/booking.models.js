@@ -13,16 +13,16 @@ const bookingSchema = new mongoose.Schema({
   paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'paid' },
   phoneNumber: { type: String, required: true },
   email: { type: String, required: true },
-  ticketId: { type: String, unique: true, required: true }
+  ticketId: { 
+    type: String, 
+    unique: true, 
+    required: true,
+    default: function() {
+      return `TKT${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+    }
+  }
 });
 
-// Generate unique ticket ID
-bookingSchema.pre('save', function(next) {
-  if (!this.ticketId) {
-    this.ticketId = `TKT${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-  }
-  next();
-});
 
 export default mongoose.model('Booking', bookingSchema);
 

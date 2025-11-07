@@ -13,7 +13,8 @@ import adminRoutes from './routes/admin.routes.js';
 import Show from './models/show.models.js';
 import Movie from './models/movie.models.js';
 import Booking from './models/booking.models.js';
-import { authenticate, requireAuth } from './middleware/auth.js';
+import { authenticate, requireAuth, generateToken } from './utils/auth.js'; // ✅ fixed import path
+import User from './models/user.models.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 
@@ -35,9 +36,29 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Demo mode: auto-create and sign-in a demo user for seamless presentations
+app.use(async (req, res, next) => {
+  try {
+    if (process.env.DEMO_MODE === 'true' && !req.cookies.token) {
+      let demoUser = await User.findOne({ email: 'demo@cinebook.com' });
+      if (!demoUser) {
+        demoUser = new User({ email: 'demo@cinebook.com', password: 'demo1234', role: 'user' });
+        await demoUser.save();
+      }
+      const token = generateToken(demoUser);
+      res.cookie('token', token, { httpOnly: true });
+      return res.redirect(req.originalUrl || '/movies');
+    }
+  } catch (e) {
+    console.error('Demo mode error:', e);
+  }
+  next();
+});
+
 app.use(authenticate); // ensures req.user is always available
 
-// Mount routes with prefix
+// Mount routes
 app.use('/auth', authRoutes);
 
 // Root route
@@ -68,7 +89,7 @@ app.get('/login', async (req, res) => {
 
 app.get('/logout', (req, res) => {
   res.clearCookie('token');
-  res.redirect('/movies');
+  res.redirect('/login');
 });
 
 // Movies dashboard
@@ -77,7 +98,6 @@ app.get('/movies', async (req, res, next) => {
     const movies = await Movie.find();
     const shows = await Show.find();
 
-    // Group shows by movieId for easy rendering in the view
     const showsByMovie = shows.reduce((acc, show) => {
       const key = String(show.movieId || '');
       if (!acc[key]) acc[key] = [];
@@ -91,7 +111,7 @@ app.get('/movies', async (req, res, next) => {
   }
 });
 
-// Seat selection: resolve by movieId and timing; create show if missing
+// Seat selection
 app.get('/seatSelection/:movieId', requireAuth, async (req, res) => {
   try {
     const movie = await Movie.findById(req.params.movieId);
@@ -104,17 +124,12 @@ app.get('/seatSelection/:movieId', requireAuth, async (req, res) => {
     let show = null;
 
     if (requestedShowTime) {
-      // Find exact show by movieId and timing
       show = await Show.findOne({ movieId: movie._id, timing: requestedShowTime });
-
-      // Create the show if it doesn't exist yet
       if (!show) {
         show = await Show.create({ movieId: movie._id, timing: requestedShowTime, bookedSeats: [] });
       }
     } else {
-      // No timing requested: pick first existing show for this movie
       show = await Show.findOne({ movieId: movie._id });
-      // If still none, default-create a standard slot
       if (!show) {
         show = await Show.create({ movieId: movie._id, timing: '10:00 AM', bookedSeats: [] });
       }
@@ -132,12 +147,12 @@ app.get('/seatSelection/:movieId', requireAuth, async (req, res) => {
   }
 });
 
-// Admin panel route
+// Admin panel
 app.get('/admin', (req, res) => {
   res.render('admin');
 });
 
-// User booking history route
+// User booking history
 app.get('/my-bookings', requireAuth, async (req, res) => {
   try {
     const bookings = await Booking.find({ userId: req.user._id })

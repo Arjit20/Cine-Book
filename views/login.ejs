@@ -1,374 +1,579 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Movie Booking</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cine-Book - Movie Ticket Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      color: #fff;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #0f0f2e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
 
-    .background-effects {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      overflow: hidden;
-    }
+        /* Animated background elements */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
 
-    .film-strip {
-      position: absolute;
-      width: 100%;
-      height: 40px;
-      background: repeating-linear-gradient(
-        90deg,
-        #000 0px,
-        #000 20px,
-        #f5c518 20px,
-        #f5c518 40px
-      );
-      opacity: 0.1;
-    }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            filter: blur(40px);
+            animation: float 20s infinite ease-in-out;
+        }
 
-    .film-strip.top {
-      top: 10%;
-    }
+        .orb1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #ff006e, #fb5607);
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
 
-    .film-strip.bottom {
-      bottom: 10%;
-    }
+        .orb2 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, #8338ec, #3a86ff);
+            bottom: -100px;
+            left: -100px;
+            animation-delay: -5s;
+        }
 
-    .spotlight {
-      position: absolute;
-      width: 300px;
-      height: 300px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(245, 197, 24, 0.2) 0%, rgba(245, 197, 24, 0) 70%);
-      top: -100px;
-      right: -100px;
-    }
+        .orb3 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #ffbe0b, #fb5607);
+            top: 50%;
+            right: 10%;
+            animation-delay: -10s;
+        }
 
-    .spotlight.two {
-      width: 200px;
-      height: 200px;
-      bottom: -50px;
-      left: -50px;
-      top: auto;
-      right: auto;
-    }
+        /* Added scrolling background text animation */
+        .background-text {
+            position: absolute;
+            font-size: 120px;
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.03);
+            white-space: nowrap;
+            animation: scrollText 15s linear infinite;
+            letter-spacing: 20px;
+            text-transform: uppercase;
+            pointer-events: none;
+        }
 
-    .auth-container {
-      background: rgba(22, 33, 62, 0.85);
-      backdrop-filter: blur(10px);
-      border-radius: 15px;
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-      width: 100%;
-      max-width: 450px;
-      padding: 40px 30px;
-      position: relative;
-      overflow: hidden;
-      border: 1px solid rgba(245, 197, 24, 0.2);
-    }
+        .background-text-1 {
+            top: 10%;
+            animation-delay: 0s;
+        }
 
-    .auth-container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 5px;
-      background: linear-gradient(90deg, #f5c518, #e1b107, #f5c518);
-    }
+        .background-text-2 {
+            top: 30%;
+            animation-delay: -5s;
+        }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 32px;
-      color: #f5c518;
-      font-weight: 600;
-      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    }
+        .background-text-3 {
+            top: 50%;
+            animation-delay: -10s;
+        }
 
-    .logo {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+        .background-text-4 {
+            top: 70%;
+            animation-delay: -15s;
+        }
 
-    .logo i {
-      font-size: 48px;
-      color: #f5c518;
-      margin-bottom: 10px;
-    }
+        @keyframes scrollText {
+            from {
+                transform: translateX(-100%);
+            }
+            to {
+                transform: translateX(100vw);
+            }
+        }
+        /* End of background text animation */
 
-    .form-group {
-      margin-bottom: 20px;
-      position: relative;
-    }
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(30px, -30px) scale(1.1);
+            }
+            50% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
+            75% {
+                transform: translate(10px, 30px) scale(1.05);
+            }
+        }
 
-    input {
-      width: 100%;
-      padding: 15px 15px 15px 45px;
-      border: none;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      font-size: 16px;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+        /* Container and form styling */
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            z-index: 10;
+        }
 
-    input:focus {
-      outline: none;
-      background: rgba(255, 255, 255, 0.15);
-      border-color: #f5c518;
-      box-shadow: 0 0 0 2px rgba(245, 197, 24, 0.2);
-    }
+        .login-card {
+            background: rgba(15, 15, 46, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 50px 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s ease-out;
+        }
 
-    input::placeholder {
-      color: rgba(255, 255, 255, 0.6);
-    }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    .form-group i {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #f5c518;
-      font-size: 18px;
-    }
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease-out;
+        }
 
-    button {
-      width: 100%;
-      padding: 15px;
-      border: none;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #f5c518 0%, #e1b107 100%);
-      color: #1a1a2e;
-      font-size: 18px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 10px;
-    }
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ff006e, #fb5607);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 0, 110, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
 
-    button:hover {
-      background: linear-gradient(135deg, #e1b107 0%, #f5c518 100%);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(245, 197, 24, 0.4);
-    }
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    .options {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 20px 0;
-      font-size: 14px;
-    }
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 10px 30px rgba(255, 0, 110, 0.3);
+            }
+            50% {
+                box-shadow: 0 10px 50px rgba(255, 0, 110, 0.6);
+            }
+        }
 
-    .remember {
-      display: flex;
-      align-items: center;
-    }
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff006e, #ffbe0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
 
-    .remember input {
-      width: auto;
-      margin-right: 8px;
-    }
+        h1 {
+            font-size: 28px;
+            color: white;
+            margin-bottom: 12px;
+            text-align: center;
+            animation: fadeInDown 0.8s ease-out 0.1s both;
+        }
 
-    .forgot-password {
-      color: #f5c518;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease-out 0.2s both;
+        }
 
-    .forgot-password:hover {
-      text-decoration: underline;
-      color: #e1b107;
-    }
+        .form-group {
+            margin-bottom: 20px;
+            animation: fadeInUp 0.6s ease-out both;
+        }
 
-    .register-link {
-      text-align: center;
-      margin-top: 25px;
-      font-size: 16px;
-    }
+        .form-group:nth-child(4) {
+            animation-delay: 0.3s;
+        }
 
-    .register-link a {
-      color: #f5c518;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.3s ease;
-    }
+        .form-group:nth-child(5) {
+            animation-delay: 0.4s;
+        }
 
-    .register-link a:hover {
-      text-decoration: underline;
-      color: #e1b107;
-    }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    .divider {
-      display: flex;
-      align-items: center;
-      margin: 25px 0;
-    }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.2);
-    }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
 
-    .divider span {
-      padding: 0 15px;
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 14px;
-    }
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
 
-    .social-login {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 20px;
-    }
+        input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 0, 110, 0.5);
+            box-shadow: 0 0 20px rgba(255, 0, 110, 0.2);
+            transform: translateY(-2px);
+        }
 
-    .social-btn {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      font-size: 20px;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
+        .password-toggle {
+            position: relative;
+        }
 
-    .social-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
-      transform: translateY(-3px);
-    }
+        .password-toggle input {
+            padding-right: 45px;
+        }
 
-    .social-btn.google:hover {
-      background: #db4437;
-    }
+        .toggle-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.2s;
+        }
 
-    .social-btn.facebook:hover {
-      background: #4267B2;
-    }
+        .toggle-btn:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
 
-    .social-btn.twitter:hover {
-      background: #1DA1F2;
-    }
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 13px;
+        }
 
-    @media (max-width: 480px) {
-      .auth-container {
-        padding: 30px 20px;
-      }
-      
-      h2 {
-        font-size: 28px;
-      }
-      
-      .options {
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
-      }
-    }
-  </style>
+        .remember-forgot label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0;
+            cursor: pointer;
+            text-transform: capitalize;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            cursor: pointer;
+            accent-color: #ff006e;
+        }
+
+        .forgot-link {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .forgot-link:hover {
+            color: #ff006e;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff006e, #fb5607);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out 0.5s both;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-login:hover::before {
+            left: 100%;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(255, 0, 110, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            animation: fadeInUp 0.6s ease-out 0.6s both;
+        }
+
+        .signup-link a {
+            color: #ffbe0b;
+            text-decoration: none;
+            font-weight: 700;
+            transition: color 0.2s;
+        }
+
+        .signup-link a:hover {
+            color: #ff006e;
+            text-decoration: underline;
+        }
+
+        /* Loading animation */
+        .loading {
+            display: none;
+            text-align: center;
+            color: white;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #ff006e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Success message */
+        .success-message {
+            display: none;
+            text-align: center;
+            color: #10b981;
+            font-weight: 600;
+            padding: 15px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 40px 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 24px;
+            }
+
+            .logo-text {
+                font-size: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="background-effects">
-    <div class="film-strip top"></div>
-    <div class="film-strip bottom"></div>
-    <div class="spotlight"></div>
-    <div class="spotlight two"></div>
-  </div>
-
-  <div class="auth-container">
-    <div class="logo">
-      <i class="fas fa-film"></i>
+    <div class="background">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+        <div class="background-text background-text-1">cine_book</div>
+        <div class="background-text background-text-2">cine_book</div>
+        <div class="background-text background-text-3">cine_book</div>
+        <div class="background-text background-text-4">cine_book</div>
     </div>
-    <h2>Login</h2>
-    <form action="/auth/login" method="POST">
-      <div class="form-group">
-        <i class="fas fa-envelope"></i>
-        <input type="email" name="email" placeholder="Email" required>
-      </div>
-      <div class="form-group">
-        <i class="fas fa-lock"></i>
-        <input type="password" name="password" placeholder="Password" required>
-      </div>
-      
-      <div class="options">
-        <div class="remember">
-          <input type="checkbox" id="remember">
-          <label for="remember">Remember me</label>
+
+    <div class="container">
+        <div class="login-card">
+            <div class="logo">
+                <div class="logo-icon">🎬</div>
+                <div class="logo-text">Cine-Book</div>
+            </div>
+
+            <h1>Welcome Back</h1>
+            <p class="subtitle">Book your tickets now</p>
+
+            <div class="success-message" id="successMsg">✓ Login successful! Redirecting...</div>
+
+            <form id="loginForm" method="POST" action="/auth/login">
+                <input type="hidden" name="redirect" value="<%= redirect || '/movies' %>">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email"
+                        placeholder="your@email.com" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="password-toggle">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password"
+                            placeholder="••••••••" 
+                            required
+                        >
+                        <button type="button" class="toggle-btn" id="togglePassword">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="remember-forgot">
+                    <label>
+                        <input type="checkbox" name="remember">
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-link">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    Sign In
+                </button>
+
+                <div class="loading" id="loading" style="display:none;"><div class="spinner"></div><p>Logging in...</p></div>
+            </form>
+
+            <div class="signup-link">
+                Don't have an account? <a href="#">Sign Up</a>
+            </div>
         </div>
-        <a href="#" class="forgot-password">Forgot Password?</a>
-      </div>
-      
-      <button type="submit">Login</button>
-    </form>
-    
-    <div class="divider">
-      <span>or continue with</span>
     </div>
-    
-    <div class="social-login">
-      <a href="#" class="social-btn google">
-        <i class="fab fa-google"></i>
-      </a>
-      <a href="#" class="social-btn facebook">
-        <i class="fab fa-facebook-f"></i>
-      </a>
-      <a href="#" class="social-btn twitter">
-        <i class="fab fa-twitter"></i>
-      </a>
-    </div>
-    
-    <p class="register-link">Don't have an account? <a href="/register">Register</a></p>
-  </div>
 
-  <script>
-    // Simple form validation
-    document.querySelector('form').addEventListener('submit', function(e) {
-      const email = document.querySelector('input[name="email"]').value;
-      const password = document.querySelector('input[name="password"]').value;
-      
-      if (!email || !password) {
-        e.preventDefault();
-        alert('Please fill in all fields');
-        return;
-      }
-      
-      // Simple email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        e.preventDefault();
-        alert('Please enter a valid email address');
-        return;
-      }
-    });
-  </script>
+    <script>
+        // Password toggle functionality
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+
+        // Optional UX: show a spinner briefly on submit; allow normal form POST
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const loading = document.getElementById('loading');
+        const successMsg = document.getElementById('successMsg');
+        loginForm.addEventListener('submit', function() {
+            loginBtn.style.display = 'none';
+            loading.style.display = 'block';
+        });
+
+        // Add focus animation to form inputs
+        const inputs = document.querySelectorAll('input[type="email"], input[type="password"]');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
 </body>
 </html>
