@@ -133,13 +133,26 @@ router.post("/book", requireAuth, async (req, res, next) => {
         if (!smsResult.success) {
           console.error('SMS failed:', smsResult.error);
         }
+
+        // Include SMS status in the response so the client can inform the user.
+        return res.json({ 
+          success: true, 
+          message: `Seats ${seats.join(', ')} booked successfully!`,
+          ticketId: booking.ticketId,
+          totalAmount: totalAmount,
+          smsSent: smsResult.success,
+          smsError: smsResult.success ? null : smsResult.error
+        });
       }
 
-      res.json({ 
+      // If SMS wasn't attempted, still return success
+      return res.json({ 
         success: true, 
         message: `Seats ${seats.join(', ')} booked successfully!`,
         ticketId: booking.ticketId,
-        totalAmount: totalAmount
+        totalAmount: totalAmount,
+        smsSent: false,
+        smsError: 'SMS not attempted'
       });
     } else {
       res.status(500).json({ error: "Failed to update booking" });
