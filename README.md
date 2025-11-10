@@ -65,6 +65,10 @@ A comprehensive movie ticket booking platform similar to BookMyShow, built with 
    TWILIO_PHONE_NUMBER=your-twilio-number
    ```
 
+> Note for local development
+>
+> - If you don't set `JWT_SECRET` the app will now generate a temporary secret automatically when `NODE_ENV` is not `production`. This makes local development easier but sessions won't persist across restarts. Always set a real `JWT_SECRET` in `.env` for any persistent or production environment.
+
 4. **Seed sample data**
    ```bash
    node seedMovies.js

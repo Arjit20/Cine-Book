@@ -490,10 +490,21 @@
             <h1>Welcome Back</h1>
             <p class="subtitle">Book your tickets now</p>
 
-            <div class="success-message" id="successMsg">✓ Login successful! Redirecting...</div>
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="error-message" style="color: #ff006e; margin-bottom: 20px; text-align: center; padding: 10px; background: rgba(255,0,0,0.1); border-radius: 8px;">
+                    <%= error %>
+                </div>
+            <% } %>
+            
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="success-message" id="serverSuccess" style="display:block; margin-bottom:20px;">
+                    <%= success %>
+                </div>
+            <% } %>
 
-            <form id="loginForm" method="POST" action="/auth/login">
-                <input type="hidden" name="redirect" value="<%= redirect || '/movies' %>">
+            <div class="success-message" id="successMsg" style="display:none;">✓ Login successful! Redirecting...</div>
+
+            <form id="loginForm" method="POST" action="/auth/login?redirect=<%= encodeURIComponent(redirect || '/movies') %>">
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input 
@@ -537,7 +548,7 @@
             </form>
 
             <div class="signup-link">
-                Don't have an account? <a href="#">Sign Up</a>
+                Don't have an account? <a href="/auth/register">Sign Up</a>
             </div>
         </div>
     </div>

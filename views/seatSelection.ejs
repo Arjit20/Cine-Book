@@ -269,7 +269,9 @@
     const confirmBtn = document.getElementById('confirmBtn');
     const toggle3DBtn = document.getElementById('toggle3D');
 
-    const baseSeatPrice = <%= show && show.price ? show.price : 250 %>;
+    const baseSeatPrice = <%- JSON.stringify(show && show.price ? show.price : 250) %>;
+
+
     let selectedSeats = [];
     let bookedSeats = [];
 
@@ -279,7 +281,7 @@
         // Load already booked seats from backend
         const showId = '<%= show && show._id ? show._id : "" %>';
         if (showId) {
-          const response = await fetch(`/booked-seats/${showId}?t=${Date.now()}`, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } });
+          const response = await fetch(`/seats/booked-seats/${showId}?t=${Date.now()}`, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' } });
           const result = await response.json();
           if (result.bookedSeats) {
             bookedSeats = result.bookedSeats;
@@ -375,7 +377,7 @@
         // Reload booked seats from server (handles post-book updates)
         const showId = '<%= show && show._id ? show._id : "" %>';
         if (showId) {
-          const res = await fetch(`/booked-seats/${showId}?t=${Date.now()}`, { 
+          const res = await fetch(`/seats/booked-seats/${showId}?t=${Date.now()}`, { 
             cache: 'no-store', 
             headers: { 
               'Cache-Control': 'no-cache', 
@@ -454,7 +456,7 @@
           confirmBtn.disabled = true;
           confirmBtn.textContent = 'Booking...';
 
-          const response = await fetch('/book', {
+          const response = await fetch('/seats/book', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -470,11 +472,12 @@
           const result = await response.json();
           
           if (result.success) {
-            alert(`✅ ${result.message}\n🎫 Ticket ID: ${result.ticketId}\n💰 Total: ₹${result.totalAmount}\n📱 SMS sent to ${userPhone}`);
-            
+            const smsStatus = (typeof result.smsSent !== 'undefined') ? (result.smsSent ? `📱 SMS sent to ${userPhone}` : `⚠️ SMS not sent: ${result.smsError || 'unknown reason'}`) : '';
+            alert(`✅ ${result.message}\n🎫 Ticket ID: ${result.ticketId}\n💰 Total: ₹${result.totalAmount}\n${smsStatus}`);
+
             // Clear selected seats array
             selectedSeats = [];
-            
+
             // Ensure grid and counts are fully refreshed with latest booked seats from server
             await hardResetSelection();
 
@@ -499,7 +502,7 @@
         return;
       }
       try {
-        const resp = await fetch('/cancel-booking', {
+        const resp = await fetch('/seats/cancel-booking', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ticketId })

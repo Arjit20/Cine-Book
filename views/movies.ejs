@@ -44,6 +44,25 @@
       gap: 16px;
       flex-shrink: 0;
     }
+    .navbar-user {
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .navbar-user-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #00bcd4, #0097a7);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+    }
     .navbar-btn {
       background: #00bcd4;
       color: #fff;
@@ -59,6 +78,38 @@
     }
     .navbar-btn:hover {
       background: #0097a7;
+    }
+
+    /* ===== Welcome Banner ===== */
+    .welcome-banner {
+      background: linear-gradient(135deg, rgba(0, 188, 212, 0.15) 0%, rgba(0, 151, 167, 0.15) 100%);
+      border: 1px solid rgba(0, 188, 212, 0.3);
+      border-radius: 12px;
+      padding: 24px 30px;
+      margin-bottom: 30px;
+      text-align: center;
+      animation: slideDown 0.5s ease-out;
+    }
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .welcome-banner h2 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      color: #00bcd4;
+    }
+    .welcome-banner p {
+      font-size: 1rem;
+      color: #aaa;
+      margin: 0;
     }
 
     /* ===== Main Content ===== */
@@ -309,6 +360,12 @@
       .movies-list {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       }
+      .welcome-banner h2 {
+        font-size: 1.4rem;
+      }
+      .navbar-user {
+        display: none;
+      }
     }
     @media (max-width: 480px) {
       .navbar { padding: 0 15px; }
@@ -319,6 +376,15 @@
         flex-direction: column;
         align-items: center;
       }
+      .welcome-banner {
+        padding: 20px;
+      }
+      .welcome-banner h2 {
+        font-size: 1.2rem;
+      }
+      .welcome-banner p {
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
@@ -328,18 +394,29 @@
     <div class="navbar-title">CINE-BOOK</div>
     <div class="navbar-actions">
       <% if (user) { %>
-        <span>Welcome, <%= user.email %></span>
+        <div class="navbar-user">
+          <div class="navbar-user-icon"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></div>
+          <span><%= user.name || user.email %></span>
+        </div>
         <a href="/my-bookings" class="navbar-btn">My Bookings</a>
         <a href="/logout" class="navbar-btn">Logout</a>
       <% } else { %>
         <a href="/login" class="navbar-btn">Login</a>
-        <a href="/register" class="navbar-btn">Sign Up</a>
+        <a href="/auth/register" class="navbar-btn">Sign Up</a>
       <% } %>
     </div>
   </div>
 
   <!-- ===== Main Content ===== -->
   <div class="main-content">
+    <!-- Welcome Banner -->
+    <% if (user) { %>
+      <div class="welcome-banner">
+        <h2>Welcome back, <%= user.name || user.email %>! 🎬</h2>
+        <p>Ready to book your next movie experience?</p>
+      </div>
+    <% } %>
+
     <!-- Carousel -->
     <div class="carousel-container">
       <button class="carousel-nav left" onclick="moveCarousel(-1)">&#10094;</button>
@@ -380,7 +457,7 @@
                     <% if (movieShows.length > 0) { %>
                       <% const show = movieShows.find(s => (s.timing || s.showTime) === label); %>
                       <% if (show) { %>
-                        <a href="/seats/<%= show._id %>" class="time-btn" title="Book <%= label %>"><%= label %></a>
+                        <a href="/seatSelection/<%= movie._id %>?showTime=<%= encodeURIComponent(label) %>" class="time-btn" title="Book <%= label %>"><%= label %></a>
                       <% } %>
                     <% } else { %>
                       <a href="/seatSelection/<%= movie._id %>?showTime=<%= encodeURIComponent(label) %>" class="time-btn" title="Book <%= label %>"><%= label %></a>
@@ -389,10 +466,12 @@
                     <% if (movieShows.length > 0) { %>
                       <% const show = movieShows.find(s => (s.timing || s.showTime) === label); %>
                       <% if (show) { %>
-                        <a href="/login?redirect=/seats/<%= show._id %>" class="time-btn" title="Login to book <%= label %>"><%= label %></a>
+                        <% const redirectUrl = encodeURIComponent('/seatSelection/' + String(movie._id) + '?showTime=' + label); %>
+                        <a href="/login?redirect=<%= redirectUrl %>" class="time-btn" title="Login to book <%= label %>"><%= label %></a>
                       <% } %>
                     <% } else { %>
-                      <a href="/login?redirect=/seatSelection/<%= movie._id %>?showTime=<%= encodeURIComponent(label) %>" class="time-btn" title="Login to book <%= label %>"><%= label %></a>
+                      <% const redirectUrl = encodeURIComponent('/seatSelection/' + String(movie._id) + '?showTime=' + label); %>
+                      <a href="/login?redirect=<%= redirectUrl %>" class="time-btn" title="Login to book <%= label %>"><%= label %></a>
                     <% } %>
                   <% } %>
                 <% }) %>
