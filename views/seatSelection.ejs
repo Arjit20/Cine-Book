@@ -226,10 +226,13 @@
         <p>Total: ₹<span id="totalCost">0</span></p>
       </div>
       
-      <!-- Phone number input for SMS -->
+      <!-- Update the email input section -->
       <div style="margin: 16px 0; text-align: center;">
-        <input type="tel" id="phoneInput" placeholder="Enter phone number for SMS ticket" 
-               style="padding: 10px; border-radius: 8px; border: 1px solid #555; background: #333; color: #fff; width: 300px; max-width: 100%;">
+        <input type="email" 
+               id="emailInput" 
+               placeholder="Enter email for booking confirmation" 
+               style="padding: 10px; border-radius: 8px; border: 1px solid #555; background: #333; color: #fff; width: 300px; max-width: 100%;"
+               value="">
       </div>
       
       <div class="summary-actions">
@@ -404,8 +407,8 @@
         selectedSeatsElement.textContent = '0';
         totalCostElement.textContent = '0';
         // Phone input ko bhi clear kar do
-        const phoneInput = document.getElementById('phoneInput');
-        if (phoneInput) phoneInput.value = '';
+        const emailInput = document.getElementById('emailInput');
+        if (emailInput) emailInput.value = '';
         if (document.activeElement === resetBtn) resetBtn.blur();
       }
     }
@@ -418,38 +421,30 @@
       toggle3DBtn.textContent = document.body.classList.contains('view-3d') ? 'Disable 3D Theater View' : 'Enable 3D Theater View';
     });
 
-    // MODIFIED CONFIRM BUTTON WITH BACKEND INTEGRATION AND SMS
+    // Update the confirm button handler
     confirmBtn.addEventListener('click', async () => {
       if (selectedSeats.length > 0) {
         try {
           const showId = '<%= show && show._id ? show._id : "" %>';
-          const phoneInput = document.getElementById('phoneInput');
-          let userPhone = phoneInput.value.trim();
+          const emailInput = document.getElementById('emailInput');
+          let userEmail = emailInput.value.trim();
           
           if (!showId) {
             alert('❌ Error: Show information not found');
             return;
           }
 
-          if (!userPhone) {
-            alert('📱 Please enter your phone number to receive SMS ticket');
-            phoneInput.focus();
+          if (!userEmail) {
+            alert('📧 Please enter your email to receive booking confirmation');
+            emailInput.focus();
             return;
           }
 
-          // Normalize common local formats to E.164 (+91 default for 10-digit)
-          const digits = userPhone.replace(/\D/g, '');
-          if (digits.length === 10) {
-            userPhone = `+91${digits}`;
-          } else if (digits.length === 11 && digits.startsWith('0')) {
-            userPhone = `+91${digits.slice(1)}`;
-          } else if (digits.length === 12 && digits.startsWith('91')) {
-            userPhone = `+${digits}`;
-          }
-          const e164 = /^\+[1-9]\d{7,14}$/;
-          if (!e164.test(userPhone)) {
-            alert('Please enter a valid phone number (e.g. +919876543210)');
-            phoneInput.focus();
+          // Validate email format
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(userEmail)) {
+            alert('Please enter a valid email address');
+            emailInput.focus();
             return;
           }
 
@@ -464,23 +459,21 @@
             body: JSON.stringify({
               showId: showId,
               seats: selectedSeats,
-              userPhone: userPhone,
-              userEmail: '<%= user && user.email ? user.email : "" %>'
+              userEmail: userEmail
             })
           });
 
           const result = await response.json();
           
           if (result.success) {
-            const smsStatus = (typeof result.smsSent !== 'undefined') ? (result.smsSent ? `📱 SMS sent to ${userPhone}` : `⚠️ SMS not sent: ${result.smsError || 'unknown reason'}`) : '';
-            alert(`✅ ${result.message}\n🎫 Ticket ID: ${result.ticketId}\n💰 Total: ₹${result.totalAmount}\n${smsStatus}`);
-
-            // Clear selected seats array
+            // Display booking confirmation with proper email status
+            const emailStatusText = result.emailStatus || '📧 Processing confirmation email...';
+            alert(`✅ Booking Successful!\n🎫 Ticket ID: ${result.ticketId}\n💰 Total: ₹${result.totalAmount}\n${emailStatusText}`);
+            
+            // Save email in localStorage for future use
+            localStorage.setItem('lastUsedEmail', userEmail);
             selectedSeats = [];
-
-            // Ensure grid and counts are fully refreshed with latest booked seats from server
             await hardResetSelection();
-
           } else {
             alert('❌ Booking failed: ' + result.error);
           }
@@ -491,6 +484,15 @@
           confirmBtn.disabled = false;
           confirmBtn.textContent = 'Book Now';
         }
+      }
+    });
+
+    // Add this to restore last used email
+    window.addEventListener('DOMContentLoaded', () => {
+      const emailInput = document.getElementById('emailInput');
+      const lastUsedEmail = localStorage.getItem('lastUsedEmail');
+      if (lastUsedEmail) {
+        emailInput.value = lastUsedEmail;
       }
     });
 

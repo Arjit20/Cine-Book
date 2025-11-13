@@ -32,32 +32,30 @@ router.post('/register', async (req, res) => {
     }
 
     // Create new user
-    const user = new User({ name, email, password });
+    const user = new User({
+      name,
+      email,
+      password
+    });
     await user.save();
-    
-    // Try to generate token and set cookie (auto-login). If JWT secret is missing,
-    // skip auto-login and redirect user to the login page with a success message.
-    try {
-      if (process.env.JWT_SECRET) {
-        const token = user.generateAuthToken();
-        res.cookie('token', token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        });
-        return res.redirect('/movies');
-      } else {
-        console.warn('JWT_SECRET is not set. Skipping auto-login after registration.');
-        return res.redirect('/auth/login?success=' + encodeURIComponent('Registration successful. Please login.'));
-      }
-    } catch (tokenErr) {
-      console.error('Token generation error:', tokenErr);
-      // Even if token generation fails, user was created. Redirect to login with a message.
-      return res.redirect('/auth/login?error=' + encodeURIComponent('Registered but failed to create session. Please login.'));
+    const token = user.generateAuthToken();
+    if (!token) {
+      console.warn('JWT_SECRET missing - cannot create session token on registration');
+      return res.redirect('/auth/register?error=' + encodeURIComponent('Server not configured for sessions. Please contact admin.'));
     }
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+    res.redirect('/movies');
   } catch (error) {
     console.error('Registration error:', error);
-    res.redirect('/auth/register?error=' + encodeURIComponent('Error during registration'));
+    if (error.code === 11000) {
+      // MongoDB duplicate key error
+      return res.redirect('/auth/register?error=' + encodeURIComponent('Email already registered'));
+    }
+    res.render('register', { error: 'Registration failed. Please try again.' });
   }
 });
 
