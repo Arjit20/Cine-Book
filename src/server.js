@@ -97,6 +97,11 @@ app.get('/logout', (req, res) => {
   res.redirect('/auth/login');
 });
 
+app.post('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/auth/login');
+});
+
 // Legacy seats route: redirect to new seat selection URL and preserve query params
 app.get('/seats/:movieId', (req, res) => {
   const movieId = req.params.movieId;
