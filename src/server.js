@@ -1,5 +1,6 @@
 import express from 'express';
-import http from 'http';
+import https from 'https';
+import fs from 'fs';
 import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -21,85 +22,92 @@ import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
-// Development fallback for JWT_SECRET: generate a temporary secret when running
-// in non-production environments to avoid crashes for new dev setups. This is
-// intentionally only for development — in production we require a real secret.
-if (!process.env.JWT_SECRET) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('ERROR: JWT_SECRET is not set. In production this is required.');
-    process.exit(1);
-  }
-  // create a temporary random secret for local development (non-persistent)
-  process.env.JWT_SECRET = crypto.randomBytes(48).toString('hex');
-  console.warn('No JWT_SECRET found — using a temporary development secret.\nSet JWT_SECRET in your .env file to persist sessions across restarts.');
-}
-
+// =====================================================
+// FIX 1: Proper ES Module Path Fix
+// =====================================================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// =====================================================
+// JWT Secret fallback for dev mode
+// =====================================================
+if (!process.env.JWT_SECRET) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('ERROR: JWT_SECRET is not set.');
+    process.exit(1);
+  }
+  process.env.JWT_SECRET = crypto.randomBytes(48).toString('hex');
+  console.warn('No JWT_SECRET found — using a temporary development secret.');
+}
+
 const app = express();
-const server = http.createServer(app);
+
+// =====================================================
+// HTTPS SERVER
+// =====================================================
+const sslOptions = {
+  key: fs.readFileSync("c:\\certs\\localhostkey.pem"),
+  cert: fs.readFileSync("c:\\certs\\localhostcert.pem")
+};
+
+const server = https.createServer(sslOptions, app);
 const io = new Server(server);
 
-// View engine setup
+// =====================================================
+// View Engine
+// =====================================================
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
+// =====================================================
 // Middleware
+// =====================================================
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Demo mode: auto-create and sign-in a demo user for seamless presentations
+// Demo mode
 app.use(async (req, res, next) => {
   try {
-    // Demo mode disabled - causing infinite redirects
     if (false && process.env.DEMO_MODE === 'true' && !req.cookies.token) {
       let demoUser = await User.findOne({ email: 'demo@cinebook.com' });
       if (!demoUser) {
-        demoUser = new User({ 
+        demoUser = new User({
           name: 'Demo User',
-          email: 'demo@cinebook.com', 
-          password: 'demo1234', 
-          role: 'user' 
+          email: 'demo@cinebook.com',
+          password: 'demo1234',
+          role: 'user'
         });
         await demoUser.save();
       }
       const token = generateToken(demoUser);
       res.cookie('token', token, { httpOnly: true });
-      // Only redirect if not already on /movies
-      if (req.path !== '/movies') {
-        return res.redirect('/movies');
-      }
+
+      if (req.path !== '/movies') return res.redirect('/movies');
     }
   } catch (e) {
-    console.error('Demo mode error:', e);
+    console.error('Demo error:', e);
   }
   next();
 });
 
-app.use(authenticate); // ensures req.user is always available
+app.use(authenticate);
 
-// Root route - redirect to movies page
-app.get('/', (req, res) => {
-  res.redirect('/movies');
-});
+// =====================================================
+// Routes
+// =====================================================
 
-// TEST ROUTE
-app.get('/test', (req, res) => {
-  res.send('Server is working fine!');
-});
+app.get('/', (req, res) => res.redirect('/movies'));
 
-// Redirect legacy routes to /auth routes
+app.get('/test', (req, res) => res.send('Server is working fine!'));
+
 app.get('/login', (req, res) => {
   const redirectParam = req.query.redirect ? `?redirect=${encodeURIComponent(req.query.redirect)}` : '';
   return res.redirect('/auth/login' + redirectParam);
 });
 
-app.get('/register', (req, res) => {
-  return res.redirect('/auth/register');
-});
+app.get('/register', (req, res) => res.redirect('/auth/register'));
 
 app.get('/logout', (req, res) => {
   res.clearCookie('token');
@@ -111,20 +119,19 @@ app.post('/logout', (req, res) => {
   res.redirect('/auth/login');
 });
 
-// Legacy seats route: redirect to new seat selection URL and preserve query params
+// Old seats route → redirect
 app.get('/seats/:movieId', (req, res) => {
   const movieId = req.params.movieId;
   const query = Object.keys(req.query).length ? '?' + new URLSearchParams(req.query).toString() : '';
   return res.redirect(`/seatSelection/${movieId}${query}`);
 });
 
-// Mount auth routes
+// Auth
 app.use('/auth', authRoutes);
 
-// Movies dashboard - public access
+// Movies page
 app.get('/movies', async (req, res, next) => {
   try {
-    console.log('Movies route hit - user:', req.user ? req.user.email : 'anonymous');
     const movies = await Movie.find();
     const shows = await Show.find();
 
@@ -135,87 +142,93 @@ app.get('/movies', async (req, res, next) => {
       return acc;
     }, {});
 
-    console.log('Rendering movies page with', movies.length, 'movies');
     res.render('movies', { movies, user: req.user, showsByMovie });
   } catch (error) {
-    console.error('Error in /movies route:', error);
     next(error);
   }
 });
 
-// Seat selection
+// Seat selection page
 app.get('/seatSelection/:movieId', requireAuth, async (req, res) => {
   try {
     const movie = await Movie.findById(req.params.movieId);
-    if (!movie) {
-      return res.redirect('/movies');
-    }
+    if (!movie) return res.redirect('/movies');
 
-    let requestedShowTime = req.query.showTime ? decodeURIComponent(String(req.query.showTime)) : undefined;
+    const requestedShowTime = req.query.showTime
+      ? decodeURIComponent(String(req.query.showTime))
+      : undefined;
 
-    let show = null;
+    let show;
 
     if (requestedShowTime) {
       show = await Show.findOne({ movieId: movie._id, timing: requestedShowTime });
       if (!show) {
-        show = await Show.create({ movieId: movie._id, timing: requestedShowTime, bookedSeats: [] });
+        show = await Show.create({
+          movieId: movie._id,
+          timing: requestedShowTime,
+          bookedSeats: []
+        });
       }
     } else {
       show = await Show.findOne({ movieId: movie._id });
       if (!show) {
-        show = await Show.create({ movieId: movie._id, timing: '10:00 AM', bookedSeats: [] });
+        show = await Show.create({
+          movieId: movie._id,
+          timing: '10:00 AM',
+          bookedSeats: []
+        });
       }
     }
 
-    return res.render('seatSelection', {
+    res.render('seatSelection', {
       movie,
       user: req.user,
       bookings: movie.bookings || [],
       show
     });
-  } catch (error) {
-    console.error('Error in seat selection:', error);
+  } catch {
     return res.redirect('/movies');
   }
 });
 
-// Admin panel
-app.get('/admin', (req, res) => {
-  res.render('admin');
-});
+// Admin
+app.get('/admin', (req, res) => res.render('admin'));
 
-// User booking history
+// Booking history
 app.get('/my-bookings', requireAuth, async (req, res) => {
   try {
     const bookings = await Booking.find({ userId: req.user._id })
       .populate('movieId', 'title posterUrl')
       .populate('showId', 'timing')
       .sort({ bookingDate: -1 });
-    
+
     res.render('myBookings', { bookings, user: req.user });
-  } catch (error) {
-    console.error('Error fetching bookings:', error);
+  } catch {
     res.redirect('/movies');
   }
 });
 
-// Mount other routes
-app.use('/api/movies', apiMovieRoutes); // API routes first
-app.use('/movies', movieRoutes);        // Movie-specific routes
-app.use('/seats', seatRoutes);          // Seat selection routes
-app.use('/api', adminRoutes);           // Admin API routes
+// API + Routes
+app.use('/api/movies', apiMovieRoutes);
+app.use('/movies', movieRoutes);
+app.use('/seats', seatRoutes);
+app.use('/api', adminRoutes);
 
-// WebSocket
+// =====================================================
+// Socket.IO
+// =====================================================
 let bookedSeats = [];
+
 io.on('connection', (socket) => {
   console.log('User connected');
   socket.emit('seatsBooked', bookedSeats);
 
   socket.on('bookSeats', (seats) => {
     try {
-      seats.forEach((seat) => {
+      seats.forEach(seat => {
         if (!bookedSeats.includes(seat)) bookedSeats.push(seat);
       });
+
       io.emit('seatsBooked', bookedSeats);
     } catch (err) {
       console.error('WebSocket error:', err);
@@ -223,19 +236,18 @@ io.on('connection', (socket) => {
   });
 });
 
-// Error handler (must be last)
+// =====================================================
+// Error Handler
+// =====================================================
 app.use(errorHandler);
 
-// Start server
+// =====================================================
+// START SERVER
+// =====================================================
 connectDB()
   .then(() => {
     server.listen(3000, () => {
-      console.log('Server running at http://localhost:3000');
-      console.log('Routes:');
-      console.log('  - Home: http://localhost:3000');
-      console.log('  - Movies: http://localhost:3000/movies');
-      console.log('  - Login: http://localhost:3000/auth/login');
-      console.log('  - Register: http://localhost:3000/auth/register');
+      console.log('HTTPS Server running at https://localhost:3000');
     });
   })
   .catch((err) => {
