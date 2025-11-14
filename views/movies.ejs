@@ -3,16 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CINE-BOOK | Movies Dashboard</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <title>CINE-BOOK | Book Movie Tickets Online</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <style>
-    /* ===== Global Styles ===== */
-    body {
-      background: #18181c;
-      font-family: 'Poppins', sans-serif;
+    * {
       margin: 0;
       padding: 0;
-      color: #fff;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: #0a0a0a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #e5e5e5;
+      line-height: 1.6;
     }
 
     /* ===== Navbar ===== */
@@ -21,552 +25,1066 @@
       top: 0;
       left: 0;
       width: 100%;
-      background: #101010;
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(20px);
       padding: 0 40px;
       z-index: 100;
-      border-bottom: 2px solid #00bcd4;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 70px;
-      box-sizing: border-box;
+      height: 72px;
     }
+    
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 48px;
+    }
+    
+    .navbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -1px;
+    }
+    
     .navbar-title {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #00bcd4;
-      letter-spacing: 1.5px;
-      white-space: nowrap;
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, #e5e5e5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
     }
+    
+    .navbar-search {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 16px;
+      width: 400px;
+      transition: all 0.3s;
+    }
+    
+    .navbar-search:focus-within {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: #e50914;
+      box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.15);
+    }
+    
+    .navbar-search input {
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+      font-size: 0.95rem;
+      color: #e5e5e5;
+      font-weight: 400;
+    }
+    
+    .navbar-search input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .search-icon {
+      margin-right: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 18px;
+    }
+    
     .navbar-actions {
       display: flex;
       align-items: center;
       gap: 16px;
-      flex-shrink: 0;
     }
+    
     .navbar-user {
-      color: #fff;
-      font-size: 0.95rem;
-      font-weight: 500;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      color: #e5e5e5;
+      font-size: 0.9rem;
+      font-weight: 500;
     }
+    
     .navbar-user-icon {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #00bcd4, #0097a7);
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #e50914, #b20710);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
+      color: #fff;
     }
+    
     .navbar-btn {
-      background: #00bcd4;
+      background: #e50914;
       color: #fff;
       border: none;
-      border-radius: 4px;
-      padding: 8px 18px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-    .navbar-btn:hover {
-      background: #0097a7;
-    }
-
-    /* ===== Welcome Banner ===== */
-    .welcome-banner {
-      background: linear-gradient(135deg, rgba(0, 188, 212, 0.15) 0%, rgba(0, 151, 167, 0.15) 100%);
-      border: 1px solid rgba(0, 188, 212, 0.3);
-      border-radius: 12px;
-      padding: 24px 30px;
-      margin-bottom: 30px;
-      text-align: center;
-      animation: slideDown 0.5s ease-out;
-    }
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    .welcome-banner h2 {
-      font-size: 1.8rem;
+      border-radius: 6px;
+      padding: 10px 24px;
+      font-size: 0.9rem;
       font-weight: 600;
-      margin: 0 0 8px 0;
-      color: #00bcd4;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
     }
-    .welcome-banner p {
-      font-size: 1rem;
-      color: #aaa;
-      margin: 0;
+    
+    .navbar-btn:hover {
+      background: #f40612;
+      box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+    }
+    
+    .navbar-btn.secondary {
+      background: transparent;
+      color: #e5e5e5;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .navbar-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.3);
     }
 
     /* ===== Main Content ===== */
     .main-content {
-      max-width: 1300px;
-      margin: 100px auto 40px auto;
+      max-width: 1400px;
+      margin: 92px auto 40px auto;
       padding: 0 20px;
     }
 
     /* ===== Carousel ===== */
     .carousel-container {
       width: 100%;
-      margin-bottom: 60px;
+      margin-bottom: 48px;
       position: relative;
       overflow: hidden;
-      border-radius: 12px;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     }
+    
     .carousel {
       display: flex;
-      transition: transform 0.6s ease;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       width: 100%;
     }
+    
     .carousel-slide {
       min-width: 100%;
-      height: 380px;
+      height: 400px;
       position: relative;
     }
+    
     .carousel-slide img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: 12px;
     }
+    
     .carousel-nav {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(0,0,0,0.6);
-      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff;
-      font-size: 2rem;
+      font-size: 1.5rem;
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
+      width: 48px;
+      height: 48px;
       cursor: pointer;
       z-index: 10;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.2s;
+      transition: all 0.3s;
+      font-weight: 300;
     }
+    
     .carousel-nav:hover {
-      background: rgba(0,188,212,0.8);
+      background: rgba(229, 9, 20, 0.9);
+      border-color: #e50914;
+      transform: translateY(-50%) scale(1.1);
     }
-    .carousel-nav.left { left: 15px; }
-    .carousel-nav.right { right: 15px; }
+    
+    .carousel-nav.left { left: 24px; }
+    .carousel-nav.right { right: 24px; }
+    
+    .carousel-indicators {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
+    
+    .indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .indicator.active {
+      background: #e50914;
+      width: 32px;
+      border-radius: 4px;
+    }
 
     /* ===== Section Header ===== */
-    .dashboard-header {
-      margin: 20px 0 30px 0;
-      width: 100%;
+    .section-header {
+      margin: 48px 0 32px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    .dashboard-header h1 {
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin-bottom: 6px;
+    
+    .section-header h2 {
+      font-size: 2rem;
+      font-weight: 700;
       color: #fff;
+      letter-spacing: -0.5px;
     }
-    .dashboard-header p {
-      color: #aaa;
-      font-size: 1rem;
+    
+    .section-subtitle {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.95rem;
+      margin-top: 6px;
+      font-weight: 400;
+    }
+    
+    .filter-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+    
+    .filter-btn:hover {
+      border-color: #e50914;
+      color: #e50914;
+      background: rgba(229, 9, 20, 0.1);
+    }
+    
+    .filter-btn.active {
+      background: #e50914;
+      color: #fff;
+      border-color: #e50914;
     }
 
     /* ===== Movie Cards ===== */
-    .movies-list {
+    .movies-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 28px;
+      margin-bottom: 48px;
     }
+    
     .movie-card {
-      background: #202020;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       overflow: hidden;
-      transition: transform 0.25s, box-shadow 0.25s;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       display: flex;
       flex-direction: column;
-      height: 480px;
     }
+    
     .movie-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 10px 28px rgba(0,0,0,0.5);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
+      border-color: rgba(229, 9, 20, 0.5);
     }
+    
+    .movie-poster-wrapper {
+      position: relative;
+      width: 100%;
+      height: 340px;
+      overflow: hidden;
+      background: #1a1a1a;
+    }
+    
     .movie-poster {
       width: 100%;
-      height: 300px;
+      height: 100%;
       object-fit: cover;
+      transition: transform 0.4s;
     }
+    
+    .movie-card:hover .movie-poster {
+      transform: scale(1.08);
+    }
+    
+    .movie-rating-badge {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .star-icon {
+      color: #fbbf24;
+      font-size: 14px;
+    }
+    
     .movie-info {
+      padding: 18px;
       flex: 1;
-      padding: 14px;
-      text-align: center;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
     }
+    
     .movie-title {
       font-size: 1.1rem;
-      font-weight: 600;
-      margin-bottom: 4px;
+      font-weight: 700;
       color: #fff;
+      margin-bottom: 10px;
+      line-height: 1.3;
     }
-    .movie-meta {
-      font-size: 0.9rem;
-      color: #bbb;
-      margin-bottom: 6px;
+    
+    .movie-genre {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
     }
-    .movie-rating {
-      font-size: 1rem;
+    
+    .genre-tag {
+      background: rgba(229, 9, 20, 0.15);
+      color: #e50914;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 0.75rem;
       font-weight: 600;
-      color: #00bcd4;
-      margin-bottom: 8px;
+      border: 1px solid rgba(229, 9, 20, 0.3);
+    }
+    
+    .movie-meta {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .meta-divider {
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
     }
 
     /* ===== Show Times ===== */
-    .show-times {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      margin: 10px 0;
+    .show-times-section {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .time-btn {
-      background: #333;
-      color: #fff;
-      border: 1px solid #00bcd4;
-      border-radius: 4px;
-      padding: 6px 12px;
-      font-size: 0.8rem;
-      text-decoration: none;
-      transition: all 0.3s;
-    }
-    .time-btn:hover {
-      background: #00bcd4;
-      transform: scale(1.05);
-    }
-
-    .book-btn {
-      display: inline-block;
-      background: #00bcd4;
-      color: #fff;
-      padding: 9px 14px;
-      border-radius: 6px;
-      font-size: 0.9rem;
+    
+    .show-times-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
       font-weight: 600;
-      text-decoration: none;
-      transition: background 0.2s, transform 0.2s;
-      margin-top: 8px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
-    .book-btn:hover {
-      background: #0097a7;
-      transform: scale(1.05);
+    
+    .show-times {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .time-btn {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 6px;
+      padding: 8px 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+      text-align: center;
+      display: block;
+    }
+    
+    .time-btn:hover {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: #22c55e;
+    }
+    
+    .book-now-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .book-now-btn:hover {
+      box-shadow: 0 8px 24px rgba(229, 9, 20, 0.4);
     }
 
-    /* ===== Slot Modal (Fancy) ===== */
-    .slot-modal {
+    /* ===== Modal ===== */
+    .modal-overlay {
       position: fixed;
       inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(0,0,0,0.55);
-      backdrop-filter: blur(4px);
       z-index: 1000;
+      animation: fadeIn 0.2s ease-out;
     }
-    .slot-modal.open { display: flex; }
-    .slot-dialog {
-      width: 92%;
-      max-width: 520px;
-      background: linear-gradient(180deg,#1a1f25 0%, #101418 100%);
-      border: 1px solid rgba(0,188,212,0.35);
-      border-radius: 14px;
-      box-shadow: 0 18px 60px rgba(0,0,0,0.6);
-      transform: translateY(12px) scale(0.98);
-      opacity: 0;
-      animation: slotIn 220ms ease-out forwards;
+    
+    .modal-overlay.open { display: flex; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
-    @keyframes slotIn {
-      to { transform: translateY(0) scale(1); opacity: 1; }
+    
+    .modal-content {
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 85vh;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.9);
+      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .slot-header {
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .modal-header {
+      padding: 24px 28px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
-    .slot-title { color:#00bcd4; margin:0; font-size:1.05rem; font-weight:600; }
-    .slot-close {
-      background: #0f1216;
-      color: #e3f8fb;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      padding: 6px 10px;
+    
+    .modal-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    
+    .modal-close {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 1.5rem;
+      color: rgba(255, 255, 255, 0.7);
       cursor: pointer;
-    }
-    .slot-body { padding: 16px; }
-    .slot-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: 10px;
-    }
-    .slot-grid .time-btn {
-      display: inline-flex;
+      width: 36px;
+      height: 36px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      padding: 10px 0;
-      border-radius: 10px;
-      background: linear-gradient(180deg,#151a1f 0%, #0f1418 100%);
-      border: 1px solid rgba(0,188,212,0.35);
-      color: #dff9fd;
-      font-weight: 600;
-      letter-spacing: 0.2px;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
-      transition: transform .16s ease, box-shadow .2s ease, background .2s ease;
-      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s;
+      font-weight: 300;
     }
-    .slot-grid .time-btn:hover {
-      background: linear-gradient(180deg,#0f171c 0%, #0c1216 100%);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 18px rgba(0,188,212,0.15);
+    
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
     }
-    .slot-footer { padding: 10px 16px 16px; display:flex; justify-content:flex-end; }
-    .slot-cancel {
-      background: transparent;
-      color: #9fb0b6;
-      border: 1px solid rgba(255,255,255,0.1);
+    
+    .modal-body {
+      padding: 28px;
+      max-height: calc(85vh - 140px);
+      overflow-y: auto;
+    }
+    
+    .time-slots-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    
+    .time-slot-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 2px solid rgba(255, 255, 255, 0.1);
       border-radius: 10px;
-      padding: 8px 14px;
+      padding: 18px 12px;
       cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+    
+    .time-slot-btn:hover {
+      border-color: #e50914;
+      background: rgba(229, 9, 20, 0.1);
+    }
+    
+    .time-slot-time {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    
+    .time-slot-label {
+      font-size: 0.75rem;
+      color: #22c55e;
+      font-weight: 600;
+    }
+
+    /* ===== No Results ===== */
+    .no-results {
+      text-align: center;
+      padding: 80px 20px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .no-results-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+    
+    .no-results h3 {
+      font-size: 1.5rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+    }
+
+    /* ===== Footer ===== */
+    .footer {
+      background: rgba(255, 255, 255, 0.02);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 40px 40px;
+      margin-top: 80px;
+    }
+    
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+    }
+    
+    .footer-section h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover {
+      color: #e50914;
     }
 
     /* ===== Responsive ===== */
-    @media (max-width: 768px) {
-      .carousel-slide { height: 240px; }
-      .movie-card { height: auto; }
-      .movie-poster { height: 220px; }
-      .movies-list {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    @media (max-width: 1024px) {
+      .navbar-search {
+        width: 300px;
       }
-      .welcome-banner h2 {
-        font-size: 1.4rem;
-      }
-      .navbar-user {
-        display: none;
+      .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       }
     }
-    @media (max-width: 480px) {
-      .navbar { padding: 0 15px; }
-      .navbar-title { font-size: 1.4rem; }
-      .navbar-actions { gap: 10px; }
-      .navbar-btn { padding: 6px 12px; font-size: 0.85rem; }
-      .show-times {
+    
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0 20px;
+      }
+      .navbar-left {
+        gap: 24px;
+      }
+      .navbar-search {
+        display: none;
+      }
+      .carousel-slide {
+        height: 240px;
+      }
+      .section-header {
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
+        gap: 20px;
       }
-      .welcome-banner {
-        padding: 20px;
+      .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 20px;
       }
-      .welcome-banner h2 {
-        font-size: 1.2rem;
+      .movie-poster-wrapper {
+        height: 260px;
       }
-      .welcome-banner p {
-        font-size: 0.9rem;
+      .time-slots-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .navbar {
+        height: 64px;
+        padding: 0 16px;
+      }
+      .navbar-title {
+        font-size: 1.25rem;
+      }
+      .logo-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+      .navbar-user span {
+        display: none;
+      }
+      .carousel-slide {
+        height: 180px;
+      }
+      .section-header h2 {
+        font-size: 1.5rem;
+      }
+      .movies-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .time-slots-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   </style>
 </head>
 <body>
   <!-- ===== Navbar ===== -->
-  <div class="navbar">
-    <div class="navbar-title">CINE-BOOK</div>
+  <nav class="navbar">
+    <div class="navbar-left">
+      <a href="/" class="navbar-logo">
+        <div class="logo-icon">CB</div>
+        <div class="navbar-title">CINE-BOOK</div>
+      </a>
+      <div class="navbar-search">
+        <span class="search-icon">⌕</span>
+        <input type="text" id="searchInput" placeholder="Search for movies...">
+      </div>
+    </div>
     <div class="navbar-actions">
       <% if (user) { %>
         <div class="navbar-user">
           <div class="navbar-user-icon"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></div>
           <span><%= user.name || user.email %></span>
         </div>
-        <a href="/my-bookings" class="navbar-btn">My Bookings</a>
-        <a href="/logout" class="navbar-btn">Logout</a>
+        <a href="/my-bookings" class="navbar-btn secondary">My Bookings</a>
+        <form action="/logout" method="POST" style="display: inline;">
+          <button type="submit" class="navbar-btn">Sign Out</button>
+        </form>
       <% } else { %>
-        <a href="/login" class="navbar-btn">Login</a>
-        <a href="/auth/register" class="navbar-btn">Sign Up</a>
+        <a href="/login" class="navbar-btn secondary">Sign In</a>
+        <a href="/auth/register" class="navbar-btn">Register</a>
       <% } %>
     </div>
-  </div>
+  </nav>
 
   <!-- ===== Main Content ===== -->
-  <div class="main-content">
-    <!-- Welcome Banner -->
-    <% if (user) { %>
-      <div class="welcome-banner">
-        <h2>Welcome back, <%= user.name || user.email %>! 🎬</h2>
-        <p>Ready to book your next movie experience?</p>
-      </div>
-    <% } %>
-
+  <main class="main-content">
     <!-- Carousel -->
     <div class="carousel-container">
-      <button class="carousel-nav left" onclick="moveCarousel(-1)">&#10094;</button>
+      <button class="carousel-nav left" onclick="moveCarousel(-1)" aria-label="Previous slide">‹</button>
       <div class="carousel" id="carousel">
-        <div class="carousel-slide"><img src="https://assets-in.bmscdn.com/promotions/cms/creatives/1695288416714_dreamgirl2sep-980x300.jpg" alt="Banner"></div>
-        <div class="carousel-slide"><img src="https://assets-in.bmscdn.com/promotions/cms/creatives/1695290739632_navratri_raas_dandiya_nights_ft_harshita_tiwari_2023_980x300.jpg" alt="Banner"></div>
-        <div class="carousel-slide"><img src="https://assets-in.bmscdn.com/promotions/cms/creatives/1695288416714_dreamgirl2sep-980x300.jpg" alt="Banner"></div>
+        <div class="carousel-slide">
+          <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221920%22 height=%22400%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad1%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%23e50914;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%23b20710;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%221920%22 height=%22400%22 fill=%22url(%23grad1)%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23fff%22 font-size=%2248%22 font-weight=%22bold%22%3ECINE-BOOK%3C/text%3E%3C/svg%3E" alt="Featured Banner">
+        </div>
+        <div class="carousel-slide">
+          <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221920%22 height=%22400%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad2%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%231a1a1a;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%23333;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%221920%22 height=%22400%22 fill=%22url(%23grad2)%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23e50914%22 font-size=%2248%22 font-weight=%22bold%22%3EBook Your Tickets Now%3C/text%3E%3C/svg%3E" alt="Event Banner">
+        </div>
+        <div class="carousel-slide">
+          <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221920%22 height=%22400%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad3%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%23e50914;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%231a1a1a;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%221920%22 height=%22400%22 fill=%22url(%23grad3)%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23fff%22 font-size=%2248%22 font-weight=%22bold%22%3ELatest Movies%3C/text%3E%3C/svg%3E" alt="Movie Banner">
+        </div>
       </div>
-      <button class="carousel-nav right" onclick="moveCarousel(1)">&#10095;</button>
+      <button class="carousel-nav right" onclick="moveCarousel(1)" aria-label="Next slide">›</button>
+      <div class="carousel-indicators">
+        <div class="indicator active" onclick="showSlide(0)"></div>
+        <div class="indicator" onclick="showSlide(1)"></div>
+        <div class="indicator" onclick="showSlide(2)"></div>
+      </div>
     </div>
 
-    <!-- Section -->
-    <div class="dashboard-header">
-      <h1>Recommended Movies</h1>
-      <p>Browse and book your favorite movies</p>
+    <!-- Section Header -->
+    <div class="section-header">
+      <div>
+        <h2>Now Showing</h2>
+        <p class="section-subtitle">Book tickets for the latest movies</p>
+      </div>
+      <div class="filter-group">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="action">Action</button>
+        <button class="filter-btn" data-filter="drama">Drama</button>
+        <button class="filter-btn" data-filter="comedy">Comedy</button>
+        <button class="filter-btn" data-filter="thriller">Thriller</button>
+      </div>
     </div>
 
-    <!-- Movies List -->
-    <div class="movies-list">
+    <!-- Movies Grid -->
+    <div class="movies-grid" id="moviesGrid">
       <% movies.forEach(function(movie) { %>
-        <div class="movie-card">
-          <img src="<%= movie.posterUrl || movie.poster %>" alt="<%= movie.title %>" class="movie-poster" onerror="this.src='https://via.placeholder.com/300x400/333/fff?text=No+Image'">
+        <div class="movie-card" 
+             data-title="<%= movie.title.toLowerCase() %>"
+             data-genres="<%= (movie.genre || '').toLowerCase() %>">
+          <div class="movie-poster-wrapper">
+            <img src="<%= movie.posterUrl || movie.poster || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22%3E%3Crect fill=%22%231a1a1a%22 width=%22300%22 height=%22450%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23e50914%22 font-size=%2224%22%3ENo Poster%3C/text%3E%3C/svg%3E' %>" 
+                 alt="<%= movie.title %>" 
+                 class="movie-poster">>
+            <div class="movie-rating-badge">
+              <span class="star-icon">★</span>
+              <span><%= movie.rating %>/10</span>
+            </div>
+          </div>
+          
           <div class="movie-info">
-            <div>
-              <div class="movie-title"><%= movie.title %></div>
-              <div class="movie-meta"><%= movie.genre %> | <%= movie.duration %></div>
-              <div class="movie-rating">⭐ <%= movie.rating %>/10</div>
-              
-              <!-- Show Times (from DB) -->
+            <div class="movie-title"><%= movie.title %></div>
+            
+            <div class="movie-genre">
+              <% 
+                const genres = movie.genre ? movie.genre.split(',').map(g => g.trim()).slice(0, 2) : ['General'];
+                genres.forEach(function(g) { 
+              %>
+                <span class="genre-tag"><%= g %></span>
+              <% }); %>
+            </div>
+            
+            <div class="movie-meta">
+              <span><%= movie.duration || '2h 30m' %></span>
+            </div>
+
+            <div class="show-times-section">
+              <div class="show-times-label">Quick Book</div>
               <div class="show-times">
                 <% 
                   const movieShows = (showsByMovie && showsByMovie[String(movie._id)]) || [];
-                  const defaultSlots = ['10:00 AM','12:00 PM','02:00 PM','03:00 PM','06:00 PM','09:00 PM'];
-                  const slotsToRender = movieShows.length > 0 ? movieShows.map(s => s.timing || s.showTime) : defaultSlots;
+                  const defaultSlots = ['10:00 AM','02:00 PM','06:00 PM'];
+                  const quickSlots = movieShows.length > 0 
+                    ? movieShows.map(s => s.timing || s.showTime).slice(0, 3)
+                    : defaultSlots;
+                  
+                  quickSlots.forEach(function(slot) {
                 %>
-                <% slotsToRender.forEach(function(label){ %>
                   <% if (user) { %>
-                    <% if (movieShows.length > 0) { %>
-                      <% const show = movieShows.find(s => (s.timing || s.showTime) === label); %>
-                      <% if (show) { %>
-                        <a href="/seatSelection/<%= movie._id %>?showTime=<%= encodeURIComponent(label) %>" class="time-btn" title="Book <%= label %>"><%= label %></a>
-                      <% } %>
-                    <% } else { %>
-                      <a href="/seatSelection/<%= movie._id %>?showTime=<%= encodeURIComponent(label) %>" class="time-btn" title="Book <%= label %>"><%= label %></a>
-                    <% } %>
+                    <a href="/seatSelection/<%= movie._id %>?showTime=<%= encodeURIComponent(slot) %>" 
+                       class="time-btn"><%= slot %></a>
                   <% } else { %>
-                    <% if (movieShows.length > 0) { %>
-                      <% const show = movieShows.find(s => (s.timing || s.showTime) === label); %>
-                      <% if (show) { %>
-                        <% const redirectUrl = encodeURIComponent('/seatSelection/' + String(movie._id) + '?showTime=' + label); %>
-                        <a href="/login?redirect=<%= redirectUrl %>" class="time-btn" title="Login to book <%= label %>"><%= label %></a>
-                      <% } %>
-                    <% } else { %>
-                      <% const redirectUrl = encodeURIComponent('/seatSelection/' + String(movie._id) + '?showTime=' + label); %>
-                      <a href="/login?redirect=<%= redirectUrl %>" class="time-btn" title="Login to book <%= label %>"><%= label %></a>
-                    <% } %>
+                    <% const redirectUrl = encodeURIComponent('/seatSelection/' + String(movie._id) + '?showTime=' + slot); %>
+                    <a href="/login?redirect=<%= redirectUrl %>" 
+                       class="time-btn"><%= slot %></a>
                   <% } %>
-                <% }) %>
+                <% }); %>
               </div>
+              
+              <% if (user) { %>
+                <button class="book-now-btn open-modal" 
+                        data-movie-id="<%= movie._id %>"
+                        data-movie-title="<%= movie.title %>"
+                        data-shows='<%- JSON.stringify(movieShows) %>'>
+                  Book Tickets
+                </button>
+              <% } else { %>
+                <a href="/login?redirect=/movies" class="book-now-btn" style="display: block; text-align: center; text-decoration: none;">
+                  Sign In to Book
+                </a>
+              <% } %>
             </div>
-            
-            <!-- View All Shows: take to first available show or login -->
-            <% if (user) { %>
-              <button class="book-btn open-slot-modal" 
-                      data-movie-id="<%= movie._id %>"
-                      data-movie-title="<%= movie.title %>"
-                      data-shows='<%- JSON.stringify((showsByMovie && showsByMovie[String(movie._id)]) || []) %>'>
-                Book Now
-              </button>
-            <% } else { %>
-              <a href="/login?redirect=/movies" class="book-btn">Login to Book</a>
-            <% } %>
           </div>
         </div>
-      <% }) %>
+      <% }); %>
+    </div>
+
+    <!-- No Results Message -->
+    <div id="noResults" class="no-results" style="display: none;">
+      <div class="no-results-icon">⊘</div>
+      <h3>No movies found</h3>
+      <p>Try adjusting your search or filters</p>
+    </div>
+  </main>
+
+  <!-- ===== Time Selection Modal ===== -->
+  <div id="timeModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Select Show Time</h3>
+        <button class="modal-close" id="closeModal" aria-label="Close modal">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="timeSlotsContainer" class="time-slots-grid">
+          <!-- Time slots will be injected here -->
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ===== Time Slot Modal ===== -->
-  <div id="slotModal" class="slot-modal">
-    <div class="slot-dialog" role="dialog" aria-modal="true" aria-labelledby="slotModalTitle">
-      <div class="slot-header">
-        <h3 id="slotModalTitle" class="slot-title">Select Show Time</h3>
-        <button id="slotModalClose" class="slot-close">Close</button>
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>About Us</h3>
+        <div class="footer-links">
+          <a href="#">About CINE-BOOK</a>
+          <a href="#">Contact Us</a>
+          <a href="#">Careers</a>
+        </div>
       </div>
-      <div class="slot-body">
-        <div id="slotButtons" class="slot-grid"><!-- injected --></div>
+      <div class="footer-section">
+        <h3>Legal</h3>
+        <div class="footer-links">
+          <a href="#">Terms & Conditions</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Cookie Policy</a>
+        </div>
       </div>
-      <div class="slot-footer">
-        <button id="slotModalCancel" class="slot-cancel">Cancel</button>
+      <div class="footer-section">
+        <h3>Help</h3>
+        <div class="footer-links">
+          <a href="#">FAQs</a>
+          <a href="#">Booking Guide</a>
+          <a href="#">Customer Support</a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h3>Connect</h3>
+        <div class="footer-links">
+          <a href="#">Facebook</a>
+          <a href="#">Twitter</a>
+          <a href="#">Instagram</a>
+        </div>
       </div>
     </div>
-  </div>
+  </footer>
 
-  <!-- ===== Carousel Script ===== -->
+  <!-- ===== Scripts ===== -->
   <script>
+    // Carousel functionality
     let currentSlide = 0;
     const carousel = document.getElementById('carousel');
     const slides = document.querySelectorAll('.carousel-slide');
+    const indicators = document.querySelectorAll('.indicator');
 
     function showSlide(index) {
       currentSlide = (index + slides.length) % slides.length;
       carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
-    }
-    function moveCarousel(dir) {
-      showSlide(currentSlide + dir);
-    }
-    setInterval(() => moveCarousel(1), 5000);
-    showSlide(0);
-
-    // Slot selection modal for Book Now
-    const slotModal = document.getElementById('slotModal');
-    const slotButtons = document.getElementById('slotButtons');
-    const slotModalTitle = document.getElementById('slotModalTitle');
-    const slotModalClose = document.getElementById('slotModalClose');
-    const slotModalCancel = document.getElementById('slotModalCancel');
-
-    function openSlotPicker(movieId, movieTitle, shows) {
-      const preset = ['10:00 AM','12:00 PM','02:00 PM','03:00 PM','06:00 PM','09:00 PM'];
-      const existing = (shows || []).map(s => s.timing || s.showTime).filter(Boolean);
-      const uniqueSlots = Array.from(new Set(existing.length ? existing : preset));
-
-      slotModalTitle.textContent = `Select time — ${movieTitle}`;
-      slotButtons.innerHTML = '';
-
-      uniqueSlots.forEach((slot) => {
-        const a = document.createElement('a');
-        a.textContent = slot;
-        a.href = `/seatSelection/${movieId}?showTime=${encodeURIComponent(slot)}`;
-        a.className = 'time-btn';
-        slotButtons.appendChild(a);
+      
+      indicators.forEach((ind, i) => {
+        ind.classList.toggle('active', i === currentSlide);
       });
-
-      slotModal.classList.add('open');
     }
 
-    function closeSlotModal() { slotModal.classList.remove('open'); }
-    slotModalClose.addEventListener('click', closeSlotModal);
-    slotModalCancel.addEventListener('click', closeSlotModal);
-    slotModal.addEventListener('click', (e) => {
-      if (e.target === slotModal) closeSlotModal();
+    function moveCarousel(direction) {
+      showSlide(currentSlide + direction);
+    }
+
+    // Auto-advance carousel
+    let carouselInterval = setInterval(() => moveCarousel(1), 5000);
+
+    // Reset interval on manual navigation
+    carousel.addEventListener('click', () => {
+      clearInterval(carouselInterval);
+      carouselInterval = setInterval(() => moveCarousel(1), 5000);
     });
 
-    document.querySelectorAll('.open-slot-modal').forEach(btn => {
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const moviesGrid = document.getElementById('moviesGrid');
+    const movieCards = document.querySelectorAll('.movie-card');
+    const noResults = document.getElementById('noResults');
+
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      filterMovies();
+    });
+
+    // Filter functionality
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    let activeFilter = 'all';
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.getAttribute('data-filter');
+        filterMovies();
+      });
+    });
+
+    function filterMovies() {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      movieCards.forEach(card => {
+        const title = card.getAttribute('data-title');
+        const genres = card.getAttribute('data-genres');
+        
+        const matchesSearch = !searchTerm || title.includes(searchTerm);
+        const matchesFilter = activeFilter === 'all' || genres.includes(activeFilter);
+        
+        if (matchesSearch && matchesFilter) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // Show/hide no results message
+      if (visibleCount === 0) {
+        moviesGrid.style.display = 'none';
+        noResults.style.display = 'block';
+      } else {
+        moviesGrid.style.display = 'grid';
+        noResults.style.display = 'none';
+      }
+    }
+
+    // Modal functionality
+    const modal = document.getElementById('timeModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const timeSlotsContainer = document.getElementById('timeSlotsContainer');
+    const closeModalBtn = document.getElementById('closeModal');
+
+    function openModal(movieId, movieTitle, shows) {
+      const defaultTimes = ['10:00 AM','12:00 PM','02:00 PM','03:00 PM','06:00 PM','09:00 PM'];
+      const showTimes = shows && shows.length > 0 
+        ? shows.map(s => s.timing || s.showTime).filter(Boolean)
+        : defaultTimes;
+      
+      const uniqueTimes = [...new Set(showTimes)];
+
+      modalTitle.textContent = `${movieTitle} - Select Show Time`;
+      timeSlotsContainer.innerHTML = '';
+
+      uniqueTimes.forEach((time) => {
+        const link = document.createElement('a');
+        link.href = `/seatSelection/${movieId}?showTime=${encodeURIComponent(time)}`;
+        link.className = 'time-slot-btn';
+        
+        link.innerHTML = `
+          <div class="time-slot-time">${time}</div>
+          <div class="time-slot-label">Available</div>
+        `;
+        
+        timeSlotsContainer.appendChild(link);
+      });
+
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    closeModalBtn.addEventListener('click', closeModal);
+    
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.classList.contains('open')) {
+        closeModal();
+      }
+    });
+
+    // Attach modal triggers
+    document.querySelectorAll('.open-modal').forEach(btn => {
       btn.addEventListener('click', () => {
         const movieId = btn.getAttribute('data-movie-id');
         const movieTitle = btn.getAttribute('data-movie-title');
         let shows = [];
-        try { shows = JSON.parse(btn.getAttribute('data-shows') || '[]'); } catch(_) {}
-        openSlotPicker(movieId, movieTitle, shows);
+        try {
+          shows = JSON.parse(btn.getAttribute('data-shows') || '[]');
+        } catch (e) {
+          console.error('Failed to parse shows data');
+        }
+        openModal(movieId, movieTitle, shows);
       });
     });
   </script>

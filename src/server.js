@@ -18,7 +18,6 @@ import User from './models/user.models.js';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 import cookieParser from 'cookie-parser';
-import { sendBookingConfirmation } from './services/email.service.js';
 
 dotenv.config();
 
@@ -55,7 +54,8 @@ app.use(cookieParser());
 // Demo mode: auto-create and sign-in a demo user for seamless presentations
 app.use(async (req, res, next) => {
   try {
-    if (process.env.DEMO_MODE === 'true' && !req.cookies.token) {
+    // Demo mode disabled - causing infinite redirects
+    if (false && process.env.DEMO_MODE === 'true' && !req.cookies.token) {
       let demoUser = await User.findOne({ email: 'demo@cinebook.com' });
       if (!demoUser) {
         demoUser = new User({ 
@@ -68,7 +68,10 @@ app.use(async (req, res, next) => {
       }
       const token = generateToken(demoUser);
       res.cookie('token', token, { httpOnly: true });
-      return res.redirect(req.originalUrl || '/movies');
+      // Only redirect if not already on /movies
+      if (req.path !== '/movies') {
+        return res.redirect('/movies');
+      }
     }
   } catch (e) {
     console.error('Demo mode error:', e);
@@ -81,6 +84,11 @@ app.use(authenticate); // ensures req.user is always available
 // Root route - redirect to movies page
 app.get('/', (req, res) => {
   res.redirect('/movies');
+});
+
+// TEST ROUTE
+app.get('/test', (req, res) => {
+  res.send('Server is working fine!');
 });
 
 // Redirect legacy routes to /auth routes
@@ -98,6 +106,11 @@ app.get('/logout', (req, res) => {
   res.redirect('/auth/login');
 });
 
+app.post('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.redirect('/auth/login');
+});
+
 // Legacy seats route: redirect to new seat selection URL and preserve query params
 app.get('/seats/:movieId', (req, res) => {
   const movieId = req.params.movieId;
@@ -111,6 +124,7 @@ app.use('/auth', authRoutes);
 // Movies dashboard - public access
 app.get('/movies', async (req, res, next) => {
   try {
+    console.log('Movies route hit - user:', req.user ? req.user.email : 'anonymous');
     const movies = await Movie.find();
     const shows = await Show.find();
 
@@ -121,8 +135,10 @@ app.get('/movies', async (req, res, next) => {
       return acc;
     }, {});
 
+    console.log('Rendering movies page with', movies.length, 'movies');
     res.render('movies', { movies, user: req.user, showsByMovie });
   } catch (error) {
+    console.error('Error in /movies route:', error);
     next(error);
   }
 });
@@ -189,190 +205,21 @@ app.use('/movies', movieRoutes);        // Movie-specific routes
 app.use('/seats', seatRoutes);          // Seat selection routes
 app.use('/api', adminRoutes);           // Admin API routes
 
-// WebSocket implementation
-const temporaryLocks = new Map(); // Store temporary seat locks with timestamps
-
-io.on('connection', async (socket) => {
+// WebSocket
+let bookedSeats = [];
+io.on('connection', (socket) => {
   console.log('User connected');
+  socket.emit('seatsBooked', bookedSeats);
 
-  const showId = socket.handshake.query?.showId;
-  const userId = socket.handshake.query?.userId;
-
-  if (!showId || !userId) {
-    socket.emit('error', { message: 'showId and userId required for seat updates' });
-    return socket.disconnect();
-  }
-
-  const roomName = `show_${showId}`;
-  socket.join(roomName);
-
-  // Cleanup function for abandoned locks
-  const cleanupLocks = async () => {
-    const now = Date.now();
-    const lockKey = `${showId}:${userId}`;
-    const userLock = temporaryLocks.get(lockKey);
-    
-    if (userLock && now - userLock.timestamp > 300000) { // 5 minutes timeout
-      temporaryLocks.delete(lockKey);
-      // Release temporarily locked seats
-      await Show.findByIdAndUpdate(showId, {
-        $pullAll: { temporaryLocks: userLock.seats }
-      });
-      io.to(roomName).emit('seatsUnlocked', userLock.seats);
-    }
-  };
-
-  // Clean up old locks periodically
-  const cleanup = setInterval(cleanupLocks, 60000); // Check every minute
-
-  try {
-    const show = await Show.findById(showId).lean();
-    if (!show) {
-      socket.emit('error', { message: 'Show not found' });
-      return socket.disconnect();
-    }
-
-    // Send initial state
-    socket.emit('seatsBooked', {
-      bookedSeats: show.bookedSeats || [],
-      temporaryLocks: Array.from(temporaryLocks.values())
-        .filter(lock => lock.showId === showId)
-        .flatMap(lock => lock.seats)
-    });
-
-  } catch (err) {
-    console.error('Error loading show data:', err);
-    socket.emit('error', { message: 'Failed to load seat data' });
-    return socket.disconnect();
-  }
-
-  // Handle temporary seat locks during selection
-  socket.on('lockSeats', async ({ seats }) => {
+  socket.on('bookSeats', (seats) => {
     try {
-      if (!Array.isArray(seats) || seats.length === 0) {
-        return socket.emit('error', { message: 'Invalid seat selection' });
-      }
-
-      const show = await Show.findById(showId);
-      
-      // Validate seats aren't already booked or locked
-      const unavailableSeats = seats.filter(seat => 
-        show.bookedSeats.includes(seat) || 
-        Array.from(temporaryLocks.values())
-          .some(lock => lock.seats.includes(seat))
-      );
-
-      if (unavailableSeats.length > 0) {
-        return socket.emit('error', { 
-          message: 'Some seats are no longer available',
-          seats: unavailableSeats
-        });
-      }
-
-      // Add temporary lock
-      const lockKey = `${showId}:${userId}`;
-      temporaryLocks.set(lockKey, {
-        showId,
-        userId,
-        seats,
-        timestamp: Date.now()
+      seats.forEach((seat) => {
+        if (!bookedSeats.includes(seat)) bookedSeats.push(seat);
       });
-
-      // Update show with temporary locks
-      await Show.findByIdAndUpdate(showId, {
-        $addToSet: { temporaryLocks: { $each: seats } }
-      });
-
-      io.to(roomName).emit('seatsLocked', { seats, userId });
-      
-      // Auto-release lock after 5 minutes
-      setTimeout(async () => {
-        const lock = temporaryLocks.get(lockKey);
-        if (lock) {
-          temporaryLocks.delete(lockKey);
-          await Show.findByIdAndUpdate(showId, {
-            $pullAll: { temporaryLocks: seats }
-          });
-          io.to(roomName).emit('seatsUnlocked', seats);
-        }
-      }, 300000); // 5 minutes
-
+      io.emit('seatsBooked', bookedSeats);
     } catch (err) {
-      console.error('Lock seats error:', err);
-      socket.emit('error', { message: 'Failed to lock seats' });
+      console.error('WebSocket error:', err);
     }
-  });
-
-  // Handle final seat booking
-  socket.on('bookSeats', async ({ seats, userEmail }) => {
-    try {
-      if (!userEmail) {
-        return socket.emit('error', { message: 'Email is required' });
-      }
-
-      console.log('Processing booking for:', userEmail);
-
-      const result = await Show.findOneAndUpdate(
-        { _id: showId, bookedSeats: { $nin: seats } },
-        { $addToSet: { bookedSeats: { $each: seats } } },
-        { new: true }
-      ).populate('movieId');
-
-      if (!result) {
-        return socket.emit('error', { message: 'Seats unavailable' });
-      }
-
-      const ticketId = `TKT${Date.now()}${Math.random().toString(36).substr(2, 4)}`.toUpperCase();
-      const ticketDetails = {
-        ticketId,
-        movieTitle: result.movieId.title,
-        seats,
-        showTime: result.timing,
-        amount: seats.length * 250
-      };
-
-      // Handle email sending
-      let bookingResponse = {
-        success: true,
-        ticketId,
-        totalAmount: ticketDetails.amount,
-        seats: seats.join(', ')
-      };
-
-      try {
-        await sendBookingConfirmation(userEmail, ticketDetails);
-        bookingResponse.emailStatus = `📧 Confirmation sent to ${userEmail}`;
-      } catch (emailError) {
-        console.error('Email error:', emailError);
-        bookingResponse.emailStatus = '⚠️ Booking confirmed but email delivery failed';
-      }
-
-      // Send complete response
-      socket.emit('bookingConfirmed', bookingResponse);
-
-      // Update other clients
-      io.to(roomName).emit('seatsBooked', result.bookedSeats);
-
-    } catch (err) {
-      console.error('Booking error:', err);
-      socket.emit('error', { message: 'Booking failed' });
-    }
-  });
-
-  socket.on('disconnect', async () => {
-    clearInterval(cleanup);
-    const lockKey = `${showId}:${userId}`;
-    const userLock = temporaryLocks.get(lockKey);
-    
-    if (userLock) {
-      temporaryLocks.delete(lockKey);
-      await Show.findByIdAndUpdate(showId, {
-        $pullAll: { temporaryLocks: userLock.seats }
-      });
-      io.to(roomName).emit('seatsUnlocked', userLock.seats);
-    }
-    
-    console.log('User disconnected from show', showId);
   });
 });
 
