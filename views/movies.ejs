@@ -771,13 +771,13 @@
       <button class="carousel-nav left" onclick="moveCarousel(-1)" aria-label="Previous slide">‹</button>
       <div class="carousel" id="carousel">
         <div class="carousel-slide">
-          <img src="https://assets-in.bmscdn.com/promotions/cms/creatives/1695288416714_dreamgirl2sep-980x300.jpg" alt="Featured Banner">
+          <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221920%22 height=%22400%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad1%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%23e50914;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%23b20710;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%221920%22 height=%22400%22 fill=%22url(%23grad1)%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23fff%22 font-size=%2248%22 font-weight=%22bold%22%3ECINE-BOOK%3C/text%3E%3C/svg%3E" alt="Featured Banner">
         </div>
         <div class="carousel-slide">
-          <img src="https://assets-in.bmscdn.com/promotions/cms/creatives/1695290739632_navratri_raas_dandiya_nights_ft_harshita_tiwari_2023_980x300.jpg" alt="Event Banner">
+          <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221920%22 height=%22400%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad2%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%231a1a1a;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%23333;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%221920%22 height=%22400%22 fill=%22url(%23grad2)%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23e50914%22 font-size=%2248%22 font-weight=%22bold%22%3EBook Your Tickets Now%3C/text%3E%3C/svg%3E" alt="Event Banner">
         </div>
         <div class="carousel-slide">
-          <img src="https://assets-in.bmscdn.com/promotions/cms/creatives/1695288416714_dreamgirl2sep-980x300.jpg" alt="Movie Banner">
+          <img src="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221920%22 height=%22400%22%3E%3Cdefs%3E%3ClinearGradient id=%22grad3%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22%3E%3Cstop offset=%220%25%22 style=%22stop-color:%23e50914;stop-opacity:1%22 /%3E%3Cstop offset=%22100%25%22 style=%22stop-color:%231a1a1a;stop-opacity:1%22 /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%221920%22 height=%22400%22 fill=%22url(%23grad3)%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23fff%22 font-size=%2248%22 font-weight=%22bold%22%3ELatest Movies%3C/text%3E%3C/svg%3E" alt="Movie Banner">
         </div>
       </div>
       <button class="carousel-nav right" onclick="moveCarousel(1)" aria-label="Next slide">›</button>
@@ -810,10 +810,9 @@
              data-title="<%= movie.title.toLowerCase() %>"
              data-genres="<%= (movie.genre || '').toLowerCase() %>">
           <div class="movie-poster-wrapper">
-            <img src="<%= movie.posterUrl || movie.poster %>" 
+            <img src="<%= movie.posterUrl || movie.poster || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22450%22%3E%3Crect fill=%22%231a1a1a%22 width=%22300%22 height=%22450%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23e50914%22 font-size=%2224%22%3ENo Poster%3C/text%3E%3C/svg%3E' %>" 
                  alt="<%= movie.title %>" 
-                 class="movie-poster" 
-                 onerror="this.src='https://via.placeholder.com/300x450/1a1a1a/e50914?text=No+Poster'">
+                 class="movie-poster">>
             <div class="movie-rating-badge">
               <span class="star-icon">★</span>
               <span><%= movie.rating %>/10</span>
