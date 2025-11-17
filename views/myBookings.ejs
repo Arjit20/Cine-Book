@@ -774,9 +774,7 @@
             
             <% if (status === 'confirmed') { %>
               <div class="booking-footer">
-                <button class="action-btn btn-download" onclick="downloadTicket('<%= booking._id %>')">
-                  ⬇ Download
-                </button>
+                
                 <button class="action-btn btn-cancel" onclick="cancelBooking('<%= booking._id %>')">
                   ✕ Cancel
                 </button>
@@ -929,21 +927,7 @@
       }
     }
     
-    // Download ticket function
-    function downloadTicket(bookingId) {
-      showNotification('Downloading ticket...', 'info');
-      
-      setTimeout(() => {
-        const link = document.createElement('a');
-        link.href = `/api/bookings/${bookingId}/download`;
-        link.download = `ticket-${bookingId}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        showNotification('Ticket downloaded successfully!', 'success');
-      }, 500);
-    }
+    
     
     // Notification system
     function showNotification(message, type = 'info') {
