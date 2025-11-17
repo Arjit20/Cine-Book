@@ -76,9 +76,10 @@ router.post("/book", async (req, res) => {
     }
     
     // Verify email matches (if user was found via req.user)
-    if (user.email !== userEmail) {
-      return res.json({ success: false, error: "Email mismatch. Please use your registered email." });
-    }
+    // REMOVE the following block to allow any email for booking
+    // if (user.email !== userEmail) {
+    //   return res.json({ success: false, error: "Email mismatch. Please use your registered email." });
+    // }
 
     // Calculate total amount
     const totalAmount = seats.length * 250;
