@@ -4,93 +4,791 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Bookings - CINE-BOOK</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0f172a; color: #f1f5f9; font-family: 'Poppins', sans-serif; }
-    .navbar { position: fixed; top: 0; left: 0; width: 100%; background: #101010; padding: 0 40px; z-index: 100; border-bottom: 2px solid #00bcd4; display: flex; align-items: center; justify-content: space-between; height: 70px; box-sizing: border-box; }
-    .navbar-title { font-size: 1.8rem; font-weight: 700; color: #00bcd4; letter-spacing: 1.5px; }
-    .navbar-actions { display: flex; align-items: center; gap: 16px; }
-    .navbar-btn { background: #00bcd4; color: #fff; border: none; border-radius: 4px; padding: 8px 18px; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background 0.2s; text-decoration: none; }
-    .navbar-btn:hover { background: #0097a7; }
-    .main-content { max-width: 1200px; margin: 100px auto 40px auto; padding: 0 20px; }
-    .page-header { text-align: center; margin-bottom: 30px; }
-    .page-header h1 { color: #00bcd4; font-size: 2.5rem; margin-bottom: 10px; }
-    .bookings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
-    .booking-card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
-    .booking-card h3 { color: #14b8a6; margin-bottom: 15px; }
-    .booking-info { margin-bottom: 10px; }
-    .booking-info strong { color: #94a3b8; }
-    .booking-info span { color: #f1f5f9; }
-    .ticket-id { background: #0f172a; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 0.9rem; margin: 10px 0; }
-    .seats-display { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0; }
-    .seat-badge { background: #14b8a6; color: #0f172a; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
-    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-    .status-confirmed { background: #22c55e; color: white; }
-    .status-cancelled { background: #ef4444; color: white; }
-    .no-bookings { text-align: center; padding: 40px; color: #94a3b8; }
-    .no-bookings h3 { color: #14b8a6; margin-bottom: 10px; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: #0a0a0a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #e5e5e5;
+      line-height: 1.6;
+    }
+
+    /* ===== Navbar ===== */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(20px);
+      padding: 0 40px;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+    
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 48px;
+    }
+    
+    .navbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -1px;
+    }
+    
+    .navbar-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, #e5e5e5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+    }
+    
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .navbar-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #e5e5e5;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    
+    .navbar-user-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #e50914, #b20710);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+    
+    .navbar-btn {
+      background: #e50914;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 24px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .navbar-btn:hover {
+      background: #f40612;
+      box-shadow: 0 4px 12px rgba(229, 9, 20, 0.4);
+    }
+    
+    .navbar-btn.secondary {
+      background: transparent;
+      color: #e5e5e5;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .navbar-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* ===== Main Content ===== */
+    .main-content {
+      max-width: 1400px;
+      margin: 92px auto 40px auto;
+      padding: 0 20px;
+    }
+
+    /* ===== Page Header ===== */
+    .page-header {
+      margin-bottom: 40px;
+    }
+    
+    .page-header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, #e5e5e5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+    
+    .page-subtitle {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    /* ===== Filter Bar ===== */
+    .filter-bar {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    
+    .filter-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .filter-label {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-right: 8px;
+    }
+    
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 8px 20px;
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .filter-btn:hover {
+      border-color: #e50914;
+      color: #e50914;
+      background: rgba(229, 9, 20, 0.1);
+    }
+    
+    .filter-btn.active {
+      background: #e50914;
+      color: #fff;
+      border-color: #e50914;
+    }
+    
+    .search-box {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 280px;
+    }
+    
+    .search-box input {
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+      font-size: 0.9rem;
+      color: #e5e5e5;
+      font-weight: 400;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .search-box input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .search-icon {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 16px;
+    }
+
+    /* ===== Stats Bar ===== */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px 24px;
+      transition: all 0.3s;
+    }
+    
+    .stat-card:hover {
+      border-color: rgba(229, 9, 20, 0.3);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .stat-label {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .stat-icon {
+      font-size: 1.5rem;
+    }
+
+    /* ===== Bookings Grid ===== */
+    .bookings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+    
+    .booking-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .booking-card:hover {
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      border-color: rgba(229, 9, 20, 0.3);
+      transform: translateY(-4px);
+    }
+    
+    .booking-header {
+      background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(178, 7, 16, 0.1) 100%);
+      padding: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .booking-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    
+    .ticket-id {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      margin-top: 8px;
+    }
+    
+    .booking-body {
+      padding: 24px;
+    }
+    
+    .booking-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .booking-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .info-label {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .info-value {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    
+    .seats-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .seat-badge {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      font-family: 'Courier New', monospace;
+    }
+    
+    .amount-display {
+      background: rgba(229, 9, 20, 0.1);
+      border: 1px solid rgba(229, 9, 20, 0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 20px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .amount-label {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    
+    .amount-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #e50914;
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .status-confirmed {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    .status-cancelled {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .booking-footer {
+      padding: 0 24px 24px 24px;
+      display: flex;
+      gap: 12px;
+    }
+    
+    .action-btn {
+      flex: 1;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .btn-cancel {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .btn-cancel:hover {
+      background: #ef4444;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+    }
+    
+    .btn-download {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    .btn-download:hover {
+      background: #22c55e;
+      color: #000;
+      box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
+    }
+
+    /* ===== No Bookings State ===== */
+    .no-bookings {
+      text-align: center;
+      padding: 80px 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      margin-top: 40px;
+    }
+    
+    .no-bookings-icon {
+      font-size: 5rem;
+      margin-bottom: 24px;
+      opacity: 0.3;
+    }
+    
+    .no-bookings h3 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    
+    .no-bookings p {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 1rem;
+      margin-bottom: 32px;
+    }
+
+    /* ===== Footer ===== */
+    .footer {
+      background: rgba(255, 255, 255, 0.02);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 40px 40px;
+      margin-top: 80px;
+    }
+    
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 40px;
+    }
+    
+    .footer-section h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover {
+      color: #e50914;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 0 20px;
+      }
+      
+      .navbar-left {
+        gap: 24px;
+      }
+      
+      .navbar-user span {
+        display: none;
+      }
+      
+      .page-header h1 {
+        font-size: 2rem;
+      }
+      
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .search-box {
+        min-width: 100%;
+      }
+      
+      .bookings-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .booking-info-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .stats-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .navbar {
+        height: 64px;
+        padding: 0 16px;
+      }
+      
+      .navbar-title {
+        font-size: 1.25rem;
+      }
+      
+      .logo-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+      
+      .page-header h1 {
+        font-size: 1.75rem;
+      }
+      
+      .stats-bar {
+        grid-template-columns: 1fr;
+      }
+      
+      .booking-footer {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="navbar">
-    <div class="navbar-title">CINE-BOOK</div>
-    <div class="navbar-actions">
-      <span>Welcome, <%= user.email %></span>
-      <a href="/movies" class="navbar-btn">Movies</a>
-      <a href="/my-bookings" class="navbar-btn">My Bookings</a>
-      <a href="/logout" class="navbar-btn">Logout</a>
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar">
+    <div class="navbar-left">
+      <a href="/" class="navbar-logo">
+        <div class="logo-icon">CB</div>
+        <div class="navbar-title">CINE-BOOK</div>
+      </a>
     </div>
-  </div>
+    <div class="navbar-actions">
+      <div class="navbar-user">
+        <div class="navbar-user-icon"><%= user.email ? user.email.charAt(0).toUpperCase() : 'U' %></div>
+        <span><%= user.email %></span>
+      </div>
+      <a href="/movies" class="navbar-btn secondary">Browse Movies</a>
+      <a href="/logout" class="navbar-btn">Sign Out</a>
+    </div>
+  </nav>
 
-  <div class="main-content">
+  <!-- ===== Main Content ===== -->
+  <main class="main-content">
+    <!-- Page Header -->
     <div class="page-header">
       <h1>🎫 My Bookings</h1>
-      <p>View your movie ticket bookings</p>
+      <p class="page-subtitle">Manage and track your movie ticket bookings</p>
     </div>
 
     <% if (bookings && bookings.length > 0) { %>
-      <div class="bookings-grid">
-        <% bookings.forEach(function(booking) { %>
-          <div class="booking-card">
-            <h3><%= booking.movieId ? booking.movieId.title : 'Unknown Movie' %></h3>
-            
-            <div class="ticket-id">
-              <strong>Ticket ID:</strong> <%= booking.ticketId %>
-            </div>
-            
-            <div class="booking-info">
-              <strong>Show Time:</strong> <span><%= booking.showTime %></span>
-            </div>
-            
-            <div class="booking-info">
-              <strong>Booking Date:</strong> <span><%= new Date(booking.bookingDate).toLocaleDateString() %></span>
-            </div>
-            
-            <div class="booking-info">
-              <strong>Seats:</strong>
-              <div class="seats-display">
-                <% booking.seats.forEach(function(seat) { %>
-                  <span class="seat-badge"><%= seat %></span>
-                <% }) %>
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-label">Total Bookings</div>
+          <div class="stat-value">
+            <span class="stat-icon">🎬</span>
+            <span><%= bookings.length %></span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Tickets</div>
+          <div class="stat-value">
+            <span class="stat-icon">✓</span>
+            <span><%= bookings.filter(b => b.status === 'confirmed').length %></span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Spent</div>
+          <div class="stat-value">
+            <span class="stat-icon">₹</span>
+            <span><%= bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0) %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <span class="filter-label">Filter:</span>
+          <button class="filter-btn active" data-filter="all">All Bookings</button>
+          <button class="filter-btn" data-filter="confirmed">Active</button>
+          <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+        </div>
+        <div class="search-box">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="searchInput" placeholder="Search by movie name or ticket ID...">
+        </div>
+      </div>
+
+      <!-- Bookings Grid -->
+      <div class="bookings-grid" id="bookingsGrid">
+        <% bookings.forEach(function(booking) { 
+          // Handle different data structures
+          let movieTitle = 'Unknown Movie';
+          if (booking.movieId) {
+            if (typeof booking.movieId === 'object' && booking.movieId.title) {
+              movieTitle = booking.movieId.title;
+            } else if (typeof booking.movieId === 'string') {
+              movieTitle = booking.movieTitle || 'Movie';
+            }
+          } else if (booking.movieTitle) {
+            movieTitle = booking.movieTitle;
+          }
+          
+          // Handle seats array
+          const seats = Array.isArray(booking.seats) ? booking.seats : 
+                       (booking.seats ? [booking.seats] : ['N/A']);
+          
+          // Handle show time
+          const showTime = booking.showTime || booking.timing || 'TBA';
+          
+          // Handle booking date - use showDate if available, otherwise bookingDate
+          const bookingDate = booking.bookingDate || booking.showDate || booking.createdAt || new Date();
+          
+          // Handle total amount
+          const totalAmount = booking.totalAmount || booking.amount || 0;
+          
+          // Handle status
+          const status = booking.status || 'confirmed';
+          
+          // Handle ticket ID
+          const ticketId = booking.ticketId || booking._id || 'N/A';
+          
+          // Handle email/phone
+          const contactInfo = booking.email || booking.phoneNumber || '';
+        %>
+          <div class="booking-card" 
+               data-status="<%= status %>"
+               data-movie="<%= movieTitle.toLowerCase() %>"
+               data-ticket="<%= ticketId.toLowerCase() %>">
+            <div class="booking-header">
+              <div class="booking-title"><%= movieTitle %></div>
+              <div class="ticket-id">
+                <span>🎟️</span>
+                <span><%= ticketId %></span>
               </div>
             </div>
             
-            <div class="booking-info">
-              <strong>Total Amount:</strong> <span>₹<%= booking.totalAmount %></span>
+            <div class="booking-body">
+              <div class="booking-info-grid">
+                <div class="booking-info">
+                  <div class="info-label">Show Time</div>
+                  <div class="info-value">🕐 <%= showTime %></div>
+                </div>
+                
+                <div class="booking-info">
+                  <div class="info-label">Booking Date</div>
+                  <div class="info-value">📅 <%= new Date(bookingDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></div>
+                </div>
+                
+                <div class="booking-info" style="grid-column: 1 / -1;">
+                  <div class="info-label">Selected Seats</div>
+                  <div class="seats-display">
+<<<<<<< HEAD
+                    <% seats.forEach(function(seat) { %>
+                      <span class="seat-badge"><%= seat %></span>
+                    <% }) %>
+=======
+                    <% if (seats && seats.length > 0) { %>
+                      <% seats.forEach(function(seat) { %>
+                        <span class="seat-badge"><%= seat %></span>
+                      <% }) %>
+                    <% } else { %>
+                      <span class="seat-badge">N/A</span>
+                    <% } %>
+>>>>>>> 2e1e1f9a56a701c9a7b18899ac61767b3f238cd5
+                  </div>
+                </div>
+              </div>
+              
+              <div class="amount-display">
+                <span class="amount-label">Total Amount</span>
+                <span class="amount-value">₹<%= totalAmount %></span>
+              </div>
+              
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div class="info-label">Status</div>
+                <span class="status-badge status-<%= status %>">
+                  <span><%= status === 'confirmed' ? '✓' : '✕' %></span>
+                  <span><%= status === 'confirmed' ? 'Confirmed' : 'Cancelled' %></span>
+                </span>
+              </div>
             </div>
             
-            <div class="booking-info">
-              <strong>Status:</strong> 
-              <span class="status-badge status-<%= booking.status %>">
-                <%= booking.status === 'confirmed' ? 'Confirmed' : 'Cancelled' %>
-              </span>
-            </div>
-            
-            <% if (booking.status === 'confirmed') { %>
-              <div style="margin-top: 15px;">
-                <button onclick="cancelBooking('<%= booking._id %>')" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
-                  Cancel Booking
+            <% if (status === 'confirmed') { %>
+              <div class="booking-footer">
+<<<<<<< HEAD
+                <button class="action-btn btn-download" onclick="downloadTicket('<%= booking._id %>')">
+                  ⬇ Download
+                </button>
+=======
+                
+>>>>>>> 2e1e1f9a56a701c9a7b18899ac61767b3f238cd5
+                <button class="action-btn btn-cancel" onclick="cancelBooking('<%= booking._id %>')">
+                  ✕ Cancel
                 </button>
               </div>
             <% } %>
@@ -98,17 +796,127 @@
         <% }) %>
       </div>
     <% } else { %>
+      <!-- No Bookings State -->
       <div class="no-bookings">
-        <h3>No bookings found</h3>
-        <p>You haven't made any bookings yet.</p>
-        <a href="/movies" class="navbar-btn" style="margin-top: 15px; display: inline-block;">Browse Movies</a>
+        <div class="no-bookings-icon">🎬</div>
+        <h3>No Bookings Yet</h3>
+        <p>Start your cinema journey by booking your first movie ticket!</p>
+        <a href="/movies" class="navbar-btn">Browse Movies</a>
       </div>
     <% } %>
-  </div>
+  </main>
 
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>About Us</h3>
+        <div class="footer-links">
+          <a href="#">About CINE-BOOK</a>
+          <a href="#">Contact Us</a>
+          <a href="#">Careers</a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h3>Legal</h3>
+        <div class="footer-links">
+          <a href="#">Terms & Conditions</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Cookie Policy</a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h3>Help</h3>
+        <div class="footer-links">
+          <a href="#">FAQs</a>
+          <a href="#">Booking Guide</a>
+          <a href="#">Customer Support</a>
+        </div>
+      </div>
+      <div class="footer-section">
+        <h3>Connect</h3>
+        <div class="footer-links">
+          <a href="#">Facebook</a>
+          <a href="#">Twitter</a>
+          <a href="#">Instagram</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== Scripts ===== -->
   <script>
+    // Filter functionality
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const searchInput = document.getElementById('searchInput');
+    const bookingCards = document.querySelectorAll('.booking-card');
+    const bookingsGrid = document.getElementById('bookingsGrid');
+    
+    let activeFilter = 'all';
+    
+    if (filterButtons.length > 0) {
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          filterButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeFilter = btn.getAttribute('data-filter');
+          filterBookings();
+        });
+      });
+    }
+    
+    if (searchInput) {
+      searchInput.addEventListener('input', filterBookings);
+    }
+    
+    function filterBookings() {
+      const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      let visibleCount = 0;
+      
+      bookingCards.forEach(card => {
+        const status = card.getAttribute('data-status');
+        const movie = card.getAttribute('data-movie');
+        const ticket = card.getAttribute('data-ticket');
+        
+        const matchesFilter = activeFilter === 'all' || status === activeFilter;
+        const matchesSearch = !searchTerm || 
+                            movie.includes(searchTerm) || 
+                            ticket.includes(searchTerm);
+        
+        if (matchesFilter && matchesSearch) {
+          card.style.display = 'block';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      
+      // Show message if no results
+      if (visibleCount === 0 && bookingsGrid) {
+        if (!document.getElementById('noResults')) {
+          const noResults = document.createElement('div');
+          noResults.id = 'noResults';
+          noResults.className = 'no-bookings';
+          noResults.innerHTML = `
+            <div class="no-bookings-icon">🔍</div>
+            <h3>No bookings found</h3>
+            <p>Try adjusting your search or filters</p>
+          `;
+          bookingsGrid.parentElement.appendChild(noResults);
+        }
+      } else {
+        const existingNoResults = document.getElementById('noResults');
+        if (existingNoResults) {
+          existingNoResults.remove();
+        }
+      }
+    }
+    
+    // Cancel booking function
     async function cancelBooking(bookingId) {
-      if (!confirm('Are you sure you want to cancel this booking?')) return;
+      if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+        return;
+      }
       
       try {
         const response = await fetch(`/api/bookings/${bookingId}/cancel`, {
@@ -117,18 +925,105 @@
         });
         
         if (response.ok) {
-          alert('Booking cancelled successfully!');
-          location.reload();
+          showNotification('Booking cancelled successfully!', 'success');
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
         } else {
-          alert('Failed to cancel booking');
+          const error = await response.json();
+          showNotification(error.message || 'Failed to cancel booking', 'error');
         }
       } catch (error) {
         console.error('Error cancelling booking:', error);
-        alert('Error cancelling booking');
+        showNotification('Error cancelling booking. Please try again.', 'error');
       }
     }
+    
+<<<<<<< HEAD
+    // Download ticket function
+    function downloadTicket(bookingId) {
+      showNotification('Downloading ticket...', 'info');
+      
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = `/api/bookings/${bookingId}/download`;
+        link.download = `ticket-${bookingId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showNotification('Ticket downloaded successfully!', 'success');
+      }, 500);
+    }
+=======
+    
+>>>>>>> 2e1e1f9a56a701c9a7b18899ac61767b3f238cd5
+    
+    // Notification system
+    function showNotification(message, type = 'info') {
+      const existing = document.querySelector('.notification');
+      if (existing) {
+        existing.remove();
+      }
+      
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.style.cssText = `
+        position: fixed;
+        top: 90px;
+        right: 20px;
+        background: ${type === 'success' ? 'rgba(34, 197, 94, 0.95)' : type === 'error' ? 'rgba(239, 68, 68, 0.95)' : 'rgba(59, 130, 246, 0.95)'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        z-index: 1000;
+        font-weight: 600;
+        animation: slideIn 0.3s ease-out;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-family: 'Inter', sans-serif;
+      `;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+    
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
+<<<<<<< HEAD
 </html>
-
-
+=======
+</html>
+>>>>>>> 2e1e1f9a56a701c9a7b18899ac61767b3f238cd5

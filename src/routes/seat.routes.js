@@ -2,6 +2,7 @@ import express from "express";
 import Show from "../models/show.models.js";
 import Movie from "../models/movie.models.js";
 import Booking from "../models/booking.models.js";
+import User from "../models/user.models.js";
 import { sendTicketSMS } from "../utils/sms.js";
 import { requireAuth } from "../utils/auth.js";
 import { sendBookingConfirmation } from '../services/email.service.js';
@@ -42,9 +43,9 @@ router.get("/seats/:showId", async (req, res, next) => {
 // MODIFIED BOOKING ROUTE - FIXED VERSION WITH SMS
 router.post("/book", async (req, res) => {
   try {
-    const { showId, seats, userEmail } = req.body;
+    const { showId, seats, userEmail, phoneNumber } = req.body;
 
-    console.log("Booking request:", { showId, seats, userEmail });
+    console.log("Booking request:", { showId, seats, userEmail, phoneNumber });
 
     if (!showId || !seats || !userEmail) {
       return res.json({ success: false, error: "Missing required fields" });
@@ -55,24 +56,66 @@ router.post("/book", async (req, res) => {
       return res.json({ success: false, error: "Show not found" });
     }
 
+    if (!show.movieId) {
+      return res.json({ success: false, error: "Movie not found for this show" });
+    }
+
     // Check seat availability
     const unavailableSeats = seats.filter((seat) => show.bookedSeats.includes(seat));
     if (unavailableSeats.length > 0) {
       return res.json({ success: false, error: "Some seats are no longer available" });
     }
 
-    // Book seats
+    // Find user - prefer req.user if available, otherwise lookup by email
+    let user = req.user;
+    if (!user) {
+      user = await User.findOne({ email: userEmail });
+      if (!user) {
+        return res.json({ success: false, error: "User not found. Please login first." });
+      }
+    }
+    
+    // Verify email matches (if user was found via req.user)
+    if (user.email !== userEmail) {
+      return res.json({ success: false, error: "Email mismatch. Please use your registered email." });
+    }
+
+    // Calculate total amount
+    const totalAmount = seats.length * 250;
+
+    // Generate ticket ID (matching Booking model format)
+    const ticketId = `TKT${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+
+    // Create booking document
+    const booking = new Booking({
+      userId: user._id,
+      movieId: show.movieId._id,
+      showId: show._id,
+      seats: seats,
+      totalAmount: totalAmount,
+      showDate: new Date(), // Using current date as show date (you may want to add date field to Show model)
+      showTime: show.timing || 'TBA',
+      status: 'confirmed',
+      paymentStatus: 'paid',
+      phoneNumber: phoneNumber || user.phoneNumber || 'N/A',
+      email: userEmail,
+      ticketId: ticketId
+    });
+
+    // Save booking to database
+    await booking.save();
+
+    // Book seats in show
     await Show.findByIdAndUpdate(showId, {
       $addToSet: { bookedSeats: { $each: seats } },
     });
 
-    const ticketId = `TKT${Date.now()}${Math.random().toString(36).substr(2, 4)}`.toUpperCase();
     const ticketDetails = {
       ticketId,
       movieTitle: show.movieId.title,
       seats,
       showTime: show.timing,
-      amount: seats.length * 250,
+      amount: totalAmount,
     };
 
     // Send email
@@ -83,14 +126,17 @@ router.post("/book", async (req, res) => {
       console.log("Email sent successfully to:", userEmail);
     } catch (emailError) {
       console.error("Email sending failed:", emailError);
-      emailStatus = `⚠️ Booking confirmed but email delivery failed: ${emailError.message}`;
+      emailStatus = `⚠ Booking confirmed but email delivery failed: ${emailError.message}`;
     }
+
+    console.log("Booking created successfully:", booking._id);
 
     return res.json({
       success: true,
       ticketId,
-      totalAmount: ticketDetails.amount,
+      totalAmount: totalAmount,
       emailStatus,
+      bookingId: booking._id
     });
   } catch (error) {
     console.error("Booking error:", error);
