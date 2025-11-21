@@ -49,7 +49,13 @@ router.delete('/movies/:id', async (req, res) => {
 router.get('/shows', async (req, res) => {
   try {
     const shows = await Show.find().populate('movieId');
-    res.json(shows);
+    // Ensure each show has a movieTitle (derive from populated movieId when missing)
+    const showsSafe = shows.map(s => {
+      const obj = s.toObject ? s.toObject() : { ...s };
+      obj.movieTitle = obj.movieTitle || (obj.movieId && obj.movieId.title) || 'Unknown Movie';
+      return obj;
+    });
+    res.json(showsSafe);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch shows' });
   }
@@ -93,13 +99,16 @@ router.get('/bookings', async (req, res) => {
   try {
     const bookings = await Booking.find()
       .populate('movieId', 'title')
-      .populate('showId', 'timing')
+      .populate('showId', 'timing price pricing')
+      .populate('userId', 'name email')
       .sort({ bookingDate: -1 });
     
     // Add movie title to each booking for easier display
     const bookingsWithTitles = bookings.map(booking => ({
       ...booking.toObject(),
-      movieTitle: booking.movieId?.title || 'Unknown Movie'
+      movieTitle: booking.movieId?.title || 'Unknown Movie',
+      userName: booking.userId?.name || booking.email || 'Guest',
+      userEmail: booking.userId?.email || booking.email || null
     }));
     
     res.json(bookingsWithTitles);
@@ -122,9 +131,26 @@ router.put('/bookings/:id/cancel', async (req, res) => {
       $pull: { bookedSeats: { $in: booking.seats } }
     });
     
-    res.json({ message: 'Booking cancelled successfully' });
+    // Return updated booking and info
+    const updated = await Booking.findById(req.params.id).populate('userId', 'name email');
+    res.json({ message: 'Booking cancelled successfully', booking: updated });
   } catch (error) {
     res.status(500).json({ error: 'Failed to cancel booking' });
+  }
+});
+
+// Update show pricing
+router.put('/shows/:id', async (req, res) => {
+  try {
+    const updates = {};
+    if (req.body.price !== undefined) updates.price = req.body.price;
+    if (req.body.pricing) updates.pricing = req.body.pricing;
+
+    const show = await Show.findByIdAndUpdate(req.params.id, updates, { new: true }).populate('movieId', 'title');
+    if (!show) return res.status(404).json({ error: 'Show not found' });
+    res.json(show);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update show' });
   }
 });
 

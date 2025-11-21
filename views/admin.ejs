@@ -45,10 +45,10 @@
     </div>
 
     <div class="admin-nav">
-      <button class="nav-btn active" onclick="showSection('dashboard')">Dashboard</button>
-      <button class="nav-btn" onclick="showSection('movies')">Movies</button>
-      <button class="nav-btn" onclick="showSection('shows')">Shows</button>
-      <button class="nav-btn" onclick="showSection('bookings')">Bookings</button>
+      <button class="nav-btn active" onclick="showSection('dashboard', event)">Dashboard</button>
+      <button class="nav-btn" onclick="showSection('movies', event)">Movies</button>
+      <button class="nav-btn" onclick="showSection('shows', event)">Shows</button>
+      <button class="nav-btn" onclick="showSection('bookings', event)">Bookings</button>
     </div>
 
     <!-- Dashboard Section -->
@@ -151,6 +151,16 @@
     <!-- Bookings Section -->
     <div id="bookings" class="admin-section">
       <h2>🎫 Booking Management</h2>
+      <div class="form-group" style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
+        <div>
+          <button class="filter-btn active" data-filter="all" onclick="applyBookingFilter('all', this)">All</button>
+          <button class="filter-btn" data-filter="confirmed" onclick="applyBookingFilter('confirmed', this)">Confirmed</button>
+          <button class="filter-btn" data-filter="cancelled" onclick="applyBookingFilter('cancelled', this)">Cancelled</button>
+        </div>
+        <div style="flex:1">
+          <input id="bookingSearch" placeholder="Search by movie, ticket, or user" class="form-group" style="padding:10px;border-radius:8px;background:#0f172a;border:1px solid #334155;color:#fff;width:100%" oninput="renderBookingList()" />
+        </div>
+      </div>
       <div id="bookingsList">
         <!-- Bookings will be loaded here -->
       </div>
@@ -158,24 +168,7 @@
   </div>
 
   <script>
-    // Admin panel functionality
-    function showSection(sectionId) {
-      document.querySelectorAll('.admin-section').forEach(section => {
-        section.classList.remove('active');
-      });
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      
-      document.getElementById(sectionId).classList.add('active');
-      event.target.classList.add('active');
-      
-      // Load data for the section
-      if (sectionId === 'dashboard') loadDashboard();
-      else if (sectionId === 'movies') loadMovies();
-      else if (sectionId === 'shows') loadShows();
-      else if (sectionId === 'bookings') loadBookings();
-    }
+    // Admin panel functionality (showSection defined later to accept event)
 
     async function loadDashboard() {
       try {
@@ -215,6 +208,7 @@
             <p><strong>Rating:</strong> ${movie.rating}/10</p>
             <div class="movie-actions">
               <button class="btn btn-success" onclick="editMovie('${movie._id}')">Edit</button>
+              <button class="btn" onclick="deactivateMovie('${movie._id}')">Deactivate</button>
               <button class="btn btn-danger" onclick="deleteMovie('${movie._id}')">Delete</button>
             </div>
           </div>
@@ -246,8 +240,10 @@
             <h3>${show.movieTitle || 'Unknown Movie'}</h3>
             <p><strong>Time:</strong> ${show.timing || show.showTime}</p>
             <p><strong>Price:</strong> ₹${show.price || 250}</p>
+            <p><strong>Weekday:</strong> ${show.pricing && show.pricing.weekday ? '₹' + show.pricing.weekday : '—'} &nbsp; <strong>Weekend:</strong> ${show.pricing && show.pricing.weekend ? '₹' + show.pricing.weekend : '—'}</p>
             <p><strong>Booked Seats:</strong> ${show.bookedSeats ? show.bookedSeats.length : 0}</p>
             <div class="movie-actions">
+              <button class="btn btn-primary" onclick="editShowPrice('${show._id}')">Edit Price</button>
               <button class="btn btn-danger" onclick="deleteShow('${show._id}')">Delete</button>
             </div>
           </div>
@@ -261,25 +257,249 @@
       try {
         const response = await fetch('/api/bookings');
         const bookings = await response.json();
-        
-        const bookingsList = document.getElementById('bookingsList');
-        bookingsList.innerHTML = bookings.map(booking => `
-          <div class="movie-card">
-            <h3>Ticket: ${booking.ticketId}</h3>
-            <p><strong>Movie:</strong> ${booking.movieTitle || 'Unknown'}</p>
-            <p><strong>Seats:</strong> ${booking.seats.join(', ')}</p>
-            <p><strong>Time:</strong> ${booking.showTime}</p>
-            <p><strong>Amount:</strong> ₹${booking.totalAmount}</p>
-            <p><strong>Phone:</strong> ${booking.phoneNumber}</p>
-            <p><strong>Date:</strong> ${new Date(booking.bookingDate).toLocaleDateString()}</p>
-            <div class="movie-actions">
-              <button class="btn btn-danger" onclick="cancelBooking('${booking._id}')">Cancel</button>
-            </div>
-          </div>
-        `).join('');
+        window._adminBookings = bookings;
+        renderBookingList();
       } catch (error) {
         console.error('Error loading bookings:', error);
       }
+    }
+
+    function applyBookingFilter(filter, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      window._bookingFilter = filter;
+      renderBookingList();
+    }
+
+    function renderBookingList() {
+      const listEl = document.getElementById('bookingsList');
+      const bookings = window._adminBookings || [];
+      const filter = window._bookingFilter || 'all';
+      const q = (document.getElementById('bookingSearch')?.value || '').toLowerCase();
+
+      const filtered = bookings.filter(b => {
+        if (filter !== 'all' && (b.status || 'confirmed') !== filter) return false;
+        if (!q) return true;
+        const fields = [b.movieTitle || '', b.ticketId || '', b.userName || '', b.userEmail || ''].join(' ').toLowerCase();
+        return fields.includes(q);
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '<div class="movie-card"><p>No bookings match your filters.</p></div>';
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(booking => `
+        <div class="movie-card" data-status="${booking.status || 'confirmed'}">
+          <h3>Ticket: ${booking.ticketId}</h3>
+          <p><strong>User:</strong> ${booking.userName || booking.userEmail || 'Guest'}</p>
+          <p><strong>Movie:</strong> ${booking.movieTitle || 'Unknown'}</p>
+          <p><strong>Seats:</strong> ${booking.seats.join(', ')}</p>
+          <p><strong>Time:</strong> ${booking.showTime}</p>
+          <p><strong>Amount:</strong> ₹${booking.totalAmount}</p>
+          <p><strong>Status:</strong> ${booking.status || 'confirmed'}</p>
+          <p><strong>Phone:</strong> ${booking.phoneNumber || 'N/A'}</p>
+          <p><strong>Date:</strong> ${new Date(booking.bookingDate).toLocaleDateString()}</p>
+          <div class="movie-actions">
+            ${booking.status === 'cancelled' ? '<button class="btn" disabled>Cancelled</button>' : `<button class="btn btn-danger" onclick="cancelBooking('${booking._id}')">Cancel</button>`}
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    // Admin actions: edit/delete/cancel
+    async function deleteMovie(movieId) {
+      if (!confirm('Delete this movie? This cannot be undone.')) return;
+      try {
+        const res = await fetch(`/api/movies/${movieId}`, { method: 'DELETE' });
+        if (res.ok) {
+          alert('Movie deleted');
+          loadMovies();
+          loadDashboard();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert('Failed to delete movie: ' + (err.error || res.statusText));
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error deleting movie');
+      }
+    }
+
+    async function deactivateMovie(movieId) {
+      if (!confirm('Deactivate this movie? It will be hidden from public listings.')) return;
+      try {
+        const res = await fetch(`/api/movies/${movieId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: false })
+        });
+        if (res.ok) {
+          alert('Movie deactivated');
+          loadMovies();
+          loadDashboard();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert('Failed to deactivate movie: ' + (err.error || res.statusText));
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error deactivating movie');
+      }
+    }
+
+    async function editMovie(movieId) {
+      try {
+        // Fetch current movie
+        const current = await (await fetch(`/api/movies`)).json();
+        const movie = current.find(m => m._id === movieId);
+        if (!movie) return alert('Movie not found');
+
+        const newTitle = prompt('Movie title', movie.title) || movie.title;
+        const newGenre = prompt('Genre', movie.genre || '') || movie.genre;
+        const newLanguage = prompt('Language', movie.language || '') || movie.language;
+        const newDuration = parseInt(prompt('Duration (minutes)', movie.duration || '') || movie.duration, 10) || movie.duration;
+        const newRating = parseFloat(prompt('Rating (0-10)', movie.rating || '') || movie.rating) || movie.rating;
+        const newPoster = prompt('Poster URL', movie.posterUrl || '') || movie.posterUrl;
+
+        const payload = {
+          title: newTitle,
+          genre: newGenre,
+          language: newLanguage,
+          duration: newDuration,
+          rating: newRating,
+          posterUrl: newPoster
+        };
+
+        const res = await fetch(`/api/movies/${movieId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          alert('Movie updated');
+          loadMovies();
+          loadDashboard();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert('Failed to update movie: ' + (err.error || res.statusText));
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error updating movie');
+      }
+    }
+
+    async function deactivateMovie(movieId) {
+      if (!confirm('Mark this movie as inactive? It will be hidden from users.')) return;
+      try {
+        const res = await fetch(`/api/movies/${movieId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: false })
+        });
+        if (res.ok) {
+          alert('Movie deactivated');
+          loadMovies();
+          loadDashboard();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert('Failed to deactivate movie: ' + (err.error || res.statusText));
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error deactivating movie');
+      }
+    }
+
+    async function deleteShow(showId) {
+      if (!confirm('Delete this show?')) return;
+      try {
+        const res = await fetch(`/api/shows/${showId}`, { method: 'DELETE' });
+        if (res.ok) {
+          alert('Show deleted');
+          loadShows();
+          loadDashboard();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert('Failed to delete show: ' + (err.error || res.statusText));
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error deleting show');
+      }
+    }
+
+    async function editShowPrice(showId) {
+      try {
+        const show = (await (await fetch('/api/shows')).json()).find(s => s._id === showId);
+        if (!show) return alert('Show not found');
+
+        const base = prompt('Base price (current: ' + (show.price || 250) + ')', show.price || 250);
+        const weekday = prompt('Weekday price (leave blank to skip)', (show.pricing && show.pricing.weekday) || '') ;
+        const weekend = prompt('Weekend price (leave blank to skip)', (show.pricing && show.pricing.weekend) || '');
+
+        const payload = {};
+        if (base !== null) payload.price = parseInt(base, 10) || show.price || 250;
+        payload.pricing = {};
+        if (weekday) payload.pricing.weekday = parseInt(weekday, 10);
+        if (weekend) payload.pricing.weekend = parseInt(weekend, 10);
+
+        const res = await fetch(`/api/shows/${showId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          alert('Show pricing updated');
+          loadShows();
+          loadDashboard();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert('Failed to update show: ' + (err.error || res.statusText));
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error updating show pricing');
+      }
+    }
+
+    async function cancelBooking(bookingId) {
+      if (!confirm('Cancel this booking? Seats will be released.')) return;
+      try {
+        const res = await fetch(`/api/bookings/${bookingId}/cancel`, { method: 'PUT' });
+        if (res.ok) {
+          alert('Booking cancelled');
+          loadBookings();
+          loadDashboard();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert('Failed to cancel booking: ' + (err.error || res.statusText));
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Error cancelling booking');
+      }
+    }
+
+    // Fix showSection to accept event so nav active class works
+    function showSection(sectionId, evt) {
+      document.querySelectorAll('.admin-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(sectionId).classList.add('active');
+      if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
+
+      // Load data for the section
+      if (sectionId === 'dashboard') loadDashboard();
+      else if (sectionId === 'movies') loadMovies();
+      else if (sectionId === 'shows') loadShows();
+      else if (sectionId === 'bookings') loadBookings();
     }
 
     // Form submissions

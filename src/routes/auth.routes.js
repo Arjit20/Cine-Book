@@ -18,12 +18,15 @@ router.get('/register', (req, res) => {
 // POST Register
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
     
     // Validate required fields
     if (!name || !email || !password) {
       return res.redirect('/auth/register?error=' + encodeURIComponent('Name, email and password are required'));
     }
+
+    // Validate role
+    const userRole = (role === 'admin' || role === 'user') ? role : 'user';
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -31,11 +34,12 @@ router.post('/register', async (req, res) => {
       return res.redirect('/auth/register?error=' + encodeURIComponent('Email already registered'));
     }
 
-    // Create new user
+    // Create new user with role
     const user = new User({
       name,
       email,
-      password
+      password,
+      role: userRole
     });
     await user.save();
     const token = user.generateAuthToken();
@@ -48,7 +52,10 @@ router.post('/register', async (req, res) => {
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
-    res.redirect('/movies');
+    
+    // Redirect to appropriate dashboard based on role
+    const redirectPath = userRole === 'admin' ? '/admin' : '/movies';
+    res.redirect(redirectPath);
   } catch (error) {
     console.error('Registration error:', error);
     if (error.code === 11000) {
@@ -75,7 +82,7 @@ router.get('/login', (req, res) => {
 // POST Login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
     const redirectUrl = req.body.redirect || req.query.redirect || '/movies';
     
     // Validate fields
@@ -83,10 +90,18 @@ router.post('/login', async (req, res) => {
       return res.redirect(`/auth/login?error=${encodeURIComponent('Email and password are required')}`);
     }
 
+    // Validate requested role
+    const requestedRole = (role === 'admin' || role === 'user') ? role : 'user';
+
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.redirect(`/auth/login?error=${encodeURIComponent('Invalid email or password')}`);
+    }
+
+    // Check if user's role matches requested role
+    if (user.role !== requestedRole) {
+      return res.redirect(`/auth/login?error=${encodeURIComponent(`This account is registered as ${user.role}, not ${requestedRole}`)}`);
     }
 
     // Check password

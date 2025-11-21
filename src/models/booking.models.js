@@ -10,7 +10,8 @@ const bookingSchema = new mongoose.Schema({
   showDate: { type: Date, required: true },
   showTime: { type: String, required: true },
   status: { type: String, enum: ['confirmed', 'cancelled'], default: 'confirmed' },
-  paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'paid' },
+  paymentStatus: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
+  paymentMethod: { type: String, enum: ['on_arrival', 'qr_payment'], default: null },
   phoneNumber: { type: String, required: true },
   email: { type: String, required: true },
   ticketId: { 
@@ -20,7 +21,9 @@ const bookingSchema = new mongoose.Schema({
     default: function() {
       return `TKT${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
     }
-  }
+  },
+  paymentDate: { type: Date, default: null },
+  qrCode: { type: String, default: null } // Store QR code data or URL
 });
 
 

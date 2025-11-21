@@ -805,7 +805,8 @@
 
     <!-- Movies Grid -->
     <div class="movies-grid" id="moviesGrid">
-      <% movies.forEach(function(movie) { %>
+      <% const showing = (typeof nowShowing !== 'undefined') ? nowShowing : movies; %>
+      <% showing.forEach(function(movie) { %>
         <div class="movie-card" 
              data-title="<%= movie.title.toLowerCase() %>"
              data-genres="<%= (movie.genre || '').toLowerCase() %>">
@@ -875,6 +876,34 @@
         </div>
       <% }); %>
     </div>
+      <!-- Coming Soon Section -->
+      <% if (typeof comingSoon !== 'undefined' && comingSoon.length > 0) { %>
+      <div class="section-header">
+        <div>
+          <h2>Coming Soon</h2>
+          <p class="section-subtitle">Upcoming releases — plan ahead and watch trailers</p>
+        </div>
+      </div>
+
+      <div class="movies-grid">
+        <% comingSoon.forEach(function(movie) { %>
+          <div class="movie-card">
+            <div class="movie-poster-wrapper">
+              <img class="movie-poster" src="<%= movie.posterUrl || movie.poster || '' %>" alt="<%= movie.title %>">
+            </div>
+            <div class="movie-info">
+              <div class="movie-title"><%= movie.title %></div>
+              <div class="movie-genre">
+                <% (movie.genre || '').split(',').forEach(function(g){ %>
+                  <span class="genre-tag"><%= g.trim() %></span>
+                <% }); %>
+              </div>
+              <p class="section-subtitle">Releases on: <%= movie.releaseDate ? new Date(movie.releaseDate).toLocaleDateString() : 'TBD' %></p>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+      <% } %>
 
     <!-- No Results Message -->
     <div id="noResults" class="no-results" style="display: none;">

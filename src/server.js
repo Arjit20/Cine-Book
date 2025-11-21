@@ -1,5 +1,6 @@
 import express from 'express';
 import https from 'https';
+import http from 'http'; // added
 import fs from 'fs';
 import { Server } from 'socket.io';
 import path from 'path';
@@ -11,6 +12,7 @@ import authRoutes from './routes/auth.routes.js';
 import movieRoutes from './routes/movie.routes.js';
 import apiMovieRoutes from './routes/api.movies.js';
 import adminRoutes from './routes/admin.routes.js';
+import paymentRoutes from './routes/payment.routes.js';
 import Show from './models/show.models.js';
 import Movie from './models/movie.models.js';
 import Booking from './models/booking.models.js';
@@ -43,14 +45,64 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 
 // =====================================================
-// HTTPS SERVER
+// HTTPS SERVER (robust: try env / common paths; fall back to HTTP)
 // =====================================================
-const sslOptions = {
-  key: fs.readFileSync("c:\\certs\\localhostkey.pem"),
-  cert: fs.readFileSync("c:\\certs\\localhostcert.pem")
+const loadSSLOptions = () => {
+  // prefer explicit environment paths
+  const keyCandidates = [
+    process.env.SSL_KEY_PATH,
+    path.join(__dirname, '..', 'certs', 'localhostkey.pem'),
+    path.join(__dirname, '..', 'certs', 'localhost-key.pem'),
+    path.join(__dirname, '..', 'certs', 'localhost.key'),
+    'c:\\certs\\localhostkey.pem', // keep as last-resort legacy path
+  ].filter(Boolean);
+
+  const certCandidates = [
+    process.env.SSL_CERT_PATH,
+    path.join(__dirname, '..', 'certs', 'localhostcert.pem'),
+    path.join(__dirname, '..', 'certs', 'localhost-cert.pem'),
+    path.join(__dirname, '..', 'certs', 'localhost.crt'),
+    'c:\\certs\\localhostcert.pem',
+  ].filter(Boolean);
+
+  // If PEM contents are provided directly in env, use them
+  if (process.env.SSL_KEY && process.env.SSL_CERT) {
+    return {
+      key: process.env.SSL_KEY,
+      cert: process.env.SSL_CERT
+    };
+  }
+
+  // Try to find a pair of existing files
+  for (const keyPath of keyCandidates) {
+    for (const certPath of certCandidates) {
+      try {
+        if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+          return {
+            key: fs.readFileSync(keyPath),
+            cert: fs.readFileSync(certPath)
+          };
+        }
+      } catch (err) {
+        // continue searching other candidates
+      }
+    }
+  }
+
+  return null;
 };
 
-const server = https.createServer(sslOptions, app);
+const sslOptions = loadSSLOptions();
+
+let server;
+if (sslOptions) {
+  server = https.createServer(sslOptions, app);
+  console.log('HTTPS server created (SSL certificates loaded).');
+} else {
+  server = http.createServer(app);
+  console.warn('SSL certificates not found — falling back to HTTP. To enable HTTPS set SSL_KEY_PATH and SSL_CERT_PATH or place certs in ./certs/');
+}
+
 const io = new Server(server);
 
 // =====================================================
@@ -129,6 +181,9 @@ app.get('/seats/:movieId', (req, res) => {
 // Auth
 app.use('/auth', authRoutes);
 
+// Payment
+app.use('/payment', paymentRoutes);
+
 // Movies page
 app.get('/movies', async (req, res, next) => {
   try {
@@ -142,7 +197,52 @@ app.get('/movies', async (req, res, next) => {
       return acc;
     }, {});
 
-    res.render('movies', { movies, user: req.user, showsByMovie });
+    // Ensure each movie object has a `shows` array (backwards compatibility).
+    const moviesForView = movies.map(m => {
+      const obj = typeof m.toObject === 'function' ? m.toObject() : { ...m };
+      obj.shows = showsByMovie[String(m._id)] || [];
+      return obj;
+    });
+
+    // Debug logs for troubleshooting
+    console.log(`[movies route] movies found: ${movies.length}, shows found: ${shows.length}`);
+    // log first 5 movies with shows count and poster URL
+    moviesForView.slice(0,5).forEach(m => {
+      console.log(` - ${m.title} (${m._id}): shows=${m.shows.length}, poster=${m.posterUrl || 'none'}`);
+    });
+
+    // Classify movies: now showing (has active shows or releaseDate <= today) vs coming soon
+    const today = new Date();
+    const nowShowing = [];
+    const comingSoon = [];
+
+    moviesForView.forEach(m => {
+      const hasShows = (m.shows || []).length > 0;
+      const releaseDate = m.releaseDate ? new Date(m.releaseDate) : null;
+      const active = m.isActive !== undefined ? m.isActive : true;
+
+      if (!active) return; // skip deactivated movies
+
+      if (hasShows || (releaseDate && releaseDate <= today)) {
+        nowShowing.push(m);
+      } else if (releaseDate && releaseDate > today) {
+        comingSoon.push(m);
+      } else if (!releaseDate && !hasShows) {
+        // treat movies with no shows and no releaseDate as now showing fallback
+        nowShowing.push(m);
+      }
+    });
+
+    // If debug query param provided, return JSON snapshot
+    if (req.query.debug === '1') {
+      return res.json({
+        nowShowingCount: nowShowing.length,
+        comingSoonCount: comingSoon.length,
+        sampleNowShowing: nowShowing.slice(0,10).map(m => ({_id: m._id, title: m.title}))
+      });
+    }
+
+    res.render('movies', { nowShowing, comingSoon, user: req.user, showsByMovie });
   } catch (error) {
     next(error);
   }
@@ -166,7 +266,9 @@ app.get('/seatSelection/:movieId', requireAuth, async (req, res) => {
         show = await Show.create({
           movieId: movie._id,
           timing: requestedShowTime,
-          bookedSeats: []
+          bookedSeats: [],
+          movieTitle: movie.title,
+          price: 250
         });
       }
     } else {
@@ -175,7 +277,9 @@ app.get('/seatSelection/:movieId', requireAuth, async (req, res) => {
         show = await Show.create({
           movieId: movie._id,
           timing: '10:00 AM',
-          bookedSeats: []
+          bookedSeats: [],
+          movieTitle: movie.title,
+          price: 250
         });
       }
     }
@@ -194,16 +298,27 @@ app.get('/seatSelection/:movieId', requireAuth, async (req, res) => {
 // Admin
 app.get('/admin', (req, res) => res.render('admin'));
 
+// Backwards-compatible redirect: allow `/movies/admin` to reach admin page
+app.get('/movies/admin', (req, res) => res.redirect('/admin'));
+
 // Booking history
-app.get('/my-bookings', requireAuth, async (req, res) => {
+app.get('/my-bookings', authenticate, (req, res, next) => {
+  if (!req.user) {
+    return res.redirect(`/auth/login?redirect=/my-bookings`);
+  }
+  next();
+}, async (req, res) => {
   try {
+    console.log('📖 /my-bookings accessed by authenticated user:', req.user._id);
     const bookings = await Booking.find({ userId: req.user._id })
       .populate('movieId', 'title posterUrl')
       .populate('showId', 'timing')
       .sort({ bookingDate: -1 });
 
+    console.log('Found', bookings.length, 'bookings');
     res.render('myBookings', { bookings, user: req.user });
-  } catch {
+  } catch (err) {
+    console.error('Error loading my-bookings:', err);
     res.redirect('/movies');
   }
 });
@@ -247,7 +362,8 @@ app.use(errorHandler);
 connectDB()
   .then(() => {
     server.listen(3000, () => {
-      console.log('HTTPS Server running at https://localhost:3000');
+      const protocol = sslOptions ? 'https' : 'http';
+      console.log(`${protocol.toUpperCase()} Server running at ${protocol}://localhost:3000`);
     });
   })
   .catch((err) => {

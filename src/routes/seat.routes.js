@@ -4,7 +4,7 @@ import Movie from "../models/movie.models.js";
 import Booking from "../models/booking.models.js";
 import User from "../models/user.models.js";
 import { sendTicketSMS } from "../utils/sms.js";
-import { requireAuth } from "../utils/auth.js";
+import { requireAuth, generateToken } from "../utils/auth.js";
 import { sendBookingConfirmation } from '../services/email.service.js';
 
 const router = express.Router();
@@ -60,10 +60,20 @@ router.post("/book", async (req, res) => {
       return res.json({ success: false, error: "Movie not found for this show" });
     }
 
-    // Check seat availability
-    const unavailableSeats = seats.filter((seat) => show.bookedSeats.includes(seat));
-    if (unavailableSeats.length > 0) {
-      return res.json({ success: false, error: "Some seats are no longer available" });
+    // Attempt to reserve seats atomically: only succeed if none of the requested seats
+    // are already present in `bookedSeats`. This prevents a race where two users
+    // try to book the same seats at once.
+    const reservedShow = await Show.findOneAndUpdate(
+      { _id: showId, bookedSeats: { $nin: seats } },
+      { $push: { bookedSeats: { $each: seats } } },
+      { new: true }
+    );
+
+    if (!reservedShow) {
+      // Find which seats are currently unavailable to show a helpful message
+      const latestShow = await Show.findById(showId);
+      const unavailableSeats = seats.filter((seat) => latestShow && latestShow.bookedSeats.includes(seat));
+      return res.json({ success: false, error: "Some seats are no longer available", unavailableSeats });
     }
 
     // Find user - prefer req.user if available, otherwise lookup by email
@@ -76,12 +86,26 @@ router.post("/book", async (req, res) => {
     }
     
     // Verify email matches (if user was found via req.user)
-    if (user.email !== userEmail) {
-      return res.json({ success: false, error: "Email mismatch. Please use your registered email." });
+    // REMOVE the following block to allow any email for booking
+    // if (user.email !== userEmail) {
+    //   return res.json({ success: false, error: "Email mismatch. Please use your registered email." });
+    // }
+
+    // Calculate per-seat price based on show pricing rules (weekday/weekend) or fallback to show.price
+    let perSeat = show.price || 250;
+    try {
+      const today = new Date();
+      const day = today.getDay(); // 0 (Sun) - 6 (Sat)
+      const isWeekend = (day === 0 || day === 6);
+      if (show.pricing) {
+        if (isWeekend && show.pricing.weekend) perSeat = show.pricing.weekend;
+        else if (!isWeekend && show.pricing.weekday) perSeat = show.pricing.weekday;
+      }
+    } catch (e) {
+      // fallback to show.price
     }
 
-    // Calculate total amount
-    const totalAmount = seats.length * 250;
+    const totalAmount = seats.length * perSeat;
 
     // Generate ticket ID (matching Booking model format)
     const ticketId = `TKT${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
@@ -96,19 +120,22 @@ router.post("/book", async (req, res) => {
       showDate: new Date(), // Using current date as show date (you may want to add date field to Show model)
       showTime: show.timing || 'TBA',
       status: 'confirmed',
-      paymentStatus: 'paid',
+      paymentStatus: 'pending', // Set to pending initially, will be updated after payment confirmation
+      paymentMethod: null, // Will be set during payment process
       phoneNumber: phoneNumber || user.phoneNumber || 'N/A',
       email: userEmail,
       ticketId: ticketId
     });
 
-    // Save booking to database
-    await booking.save();
-
-    // Book seats in show
-    await Show.findByIdAndUpdate(showId, {
-      $addToSet: { bookedSeats: { $each: seats } },
-    });
+    // Save booking to database. If booking save fails, roll back the reserved seats.
+    try {
+      await booking.save();
+    } catch (saveErr) {
+      // Roll back seat reservation
+      await Show.updateOne({ _id: showId }, { $pull: { bookedSeats: { $in: seats } } });
+      console.error('Booking save failed, rolled back seat reservation:', saveErr);
+      return res.json({ success: false, error: 'Failed to create booking. Please try again.' });
+    }
 
     const ticketDetails = {
       ticketId,
@@ -131,12 +158,27 @@ router.post("/book", async (req, res) => {
 
     console.log("Booking created successfully:", booking._id);
 
+    // Generate and set auth token so user can access /my-bookings
+    const token = generateToken(user);
+    if (token) {
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+      console.log('Auth token set for user:', user._id);
+    }
+
+    // Respond with the booking object for client-side payment flow compatibility
     return res.json({
       success: true,
       ticketId,
       totalAmount: totalAmount,
       emailStatus,
-      bookingId: booking._id
+      booking: booking,
+      paymentStatus: 'pending',
+      message: 'Booking confirmed. Please select payment method.'
     });
   } catch (error) {
     console.error("Booking error:", error);
