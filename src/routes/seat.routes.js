@@ -140,7 +140,7 @@ router.post("/book", async (req, res) => {
       console.log("Email sent successfully to:", userEmail);
     } catch (emailError) {
       console.error("Email sending failed:", emailError);
-      emailStatus = `⚠️ Booking confirmed but email delivery failed: ${emailError.message}`;
+      emailStatus = `⚠ Booking confirmed but email delivery failed: ${emailError.message}`;
     }
 
     console.log("Booking created successfully:", booking._id);

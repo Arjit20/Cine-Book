@@ -747,9 +747,19 @@
                 <div class="booking-info" style="grid-column: 1 / -1;">
                   <div class="info-label">Selected Seats</div>
                   <div class="seats-display">
+<<<<<<< HEAD
                     <% seats.forEach(function(seat) { %>
                       <span class="seat-badge"><%= seat %></span>
                     <% }) %>
+=======
+                    <% if (seats && seats.length > 0) { %>
+                      <% seats.forEach(function(seat) { %>
+                        <span class="seat-badge"><%= seat %></span>
+                      <% }) %>
+                    <% } else { %>
+                      <span class="seat-badge">N/A</span>
+                    <% } %>
+>>>>>>> 2e1e1f9a56a701c9a7b18899ac61767b3f238cd5
                   </div>
                 </div>
               </div>
@@ -770,7 +780,17 @@
             
             <% if (status === 'confirmed') { %>
               <div class="booking-footer">
+<<<<<<< HEAD
                 
+=======
+<<<<<<< HEAD
+                <button class="action-btn btn-download" onclick="downloadTicket('<%= booking._id %>')">
+                  ⬇ Download
+                </button>
+=======
+                
+>>>>>>> 2e1e1f9a56a701c9a7b18899ac61767b3f238cd5
+>>>>>>> 4437501243ff4bd91138b6244f3cc5af9a5b70d7
                 <button class="action-btn btn-cancel" onclick="cancelBooking('<%= booking._id %>')">
                   ✕ Cancel
                 </button>
@@ -923,6 +943,7 @@
       }
     }
     
+<<<<<<< HEAD
     // Download ticket function
     function downloadTicket(bookingId) {
       showNotification('Downloading ticket...', 'info');
@@ -938,6 +959,9 @@
         showNotification('Ticket downloaded successfully!', 'success');
       }, 500);
     }
+=======
+    
+>>>>>>> 2e1e1f9a56a701c9a7b18899ac61767b3f238cd5
     
     // Notification system
     function showNotification(message, type = 'info') {
@@ -1002,4 +1026,8 @@
     document.head.appendChild(style);
   </script>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 2e1e1f9a56a701c9a7b18899ac61767b3f238cd5
