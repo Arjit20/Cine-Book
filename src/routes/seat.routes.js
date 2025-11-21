@@ -81,8 +81,21 @@ router.post("/book", async (req, res) => {
     //   return res.json({ success: false, error: "Email mismatch. Please use your registered email." });
     // }
 
-    // Calculate total amount
-    const totalAmount = seats.length * 250;
+    // Calculate per-seat price based on show pricing rules (weekday/weekend) or fallback to show.price
+    let perSeat = show.price || 250;
+    try {
+      const today = new Date();
+      const day = today.getDay(); // 0 (Sun) - 6 (Sat)
+      const isWeekend = (day === 0 || day === 6);
+      if (show.pricing) {
+        if (isWeekend && show.pricing.weekend) perSeat = show.pricing.weekend;
+        else if (!isWeekend && show.pricing.weekday) perSeat = show.pricing.weekday;
+      }
+    } catch (e) {
+      // fallback to show.price
+    }
+
+    const totalAmount = seats.length * perSeat;
 
     // Generate ticket ID (matching Booking model format)
     const ticketId = `TKT${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;

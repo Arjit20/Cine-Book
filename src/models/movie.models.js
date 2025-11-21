@@ -8,6 +8,10 @@ const movieSchema = new mongoose.Schema({
   rating: Number,
   description: String,
   posterUrl: String,
+  // Optional release date for 'Coming Soon' classification
+  releaseDate: Date,
+  // Admin can deactivate outdated movies
+  isActive: { type: Boolean, default: true },
   bookings: [String], // Array of booked seat numbers
   shows: [{
     theater: String,

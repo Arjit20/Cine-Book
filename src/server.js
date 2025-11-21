@@ -207,21 +207,38 @@ app.get('/movies', async (req, res, next) => {
       console.log(` - ${m.title} (${m._id}): shows=${m.shows.length}, poster=${m.posterUrl || 'none'}`);
     });
 
-    // If debug query param provided, return JSON snapshot to inspect in browser
+    // Classify movies: now showing (has active shows or releaseDate <= today) vs coming soon
+    const today = new Date();
+    const nowShowing = [];
+    const comingSoon = [];
+
+    moviesForView.forEach(m => {
+      const hasShows = (m.shows || []).length > 0;
+      const releaseDate = m.releaseDate ? new Date(m.releaseDate) : null;
+      const active = m.isActive !== undefined ? m.isActive : true;
+
+      if (!active) return; // skip deactivated movies
+
+      if (hasShows || (releaseDate && releaseDate <= today)) {
+        nowShowing.push(m);
+      } else if (releaseDate && releaseDate > today) {
+        comingSoon.push(m);
+      } else if (!releaseDate && !hasShows) {
+        // treat movies with no shows and no releaseDate as now showing fallback
+        nowShowing.push(m);
+      }
+    });
+
+    // If debug query param provided, return JSON snapshot
     if (req.query.debug === '1') {
       return res.json({
-        moviesCount: moviesForView.length,
-        showsCount: shows.length,
-        sample: moviesForView.slice(0, 20).map(m => ({
-          _id: m._id,
-          title: m.title,
-          showsCount: (m.shows || []).length,
-          posterUrl: m.posterUrl || null
-        }))
+        nowShowingCount: nowShowing.length,
+        comingSoonCount: comingSoon.length,
+        sampleNowShowing: nowShowing.slice(0,10).map(m => ({_id: m._id, title: m.title}))
       });
     }
 
-    res.render('movies', { movies: moviesForView, user: req.user, showsByMovie });
+    res.render('movies', { nowShowing, comingSoon, user: req.user, showsByMovie });
   } catch (error) {
     next(error);
   }
@@ -245,7 +262,9 @@ app.get('/seatSelection/:movieId', requireAuth, async (req, res) => {
         show = await Show.create({
           movieId: movie._id,
           timing: requestedShowTime,
-          bookedSeats: []
+          bookedSeats: [],
+          movieTitle: movie.title,
+          price: 250
         });
       }
     } else {
@@ -254,7 +273,9 @@ app.get('/seatSelection/:movieId', requireAuth, async (req, res) => {
         show = await Show.create({
           movieId: movie._id,
           timing: '10:00 AM',
-          bookedSeats: []
+          bookedSeats: [],
+          movieTitle: movie.title,
+          price: 250
         });
       }
     }
@@ -272,6 +293,9 @@ app.get('/seatSelection/:movieId', requireAuth, async (req, res) => {
 
 // Admin
 app.get('/admin', (req, res) => res.render('admin'));
+
+// Backwards-compatible redirect: allow `/movies/admin` to reach admin page
+app.get('/movies/admin', (req, res) => res.redirect('/admin'));
 
 // Booking history
 app.get('/my-bookings', requireAuth, async (req, res) => {
