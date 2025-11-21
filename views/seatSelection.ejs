@@ -537,6 +537,226 @@
     body.view-3d .row:nth-child(7) { transform: translateZ(-12px); }
     body.view-3d .row:nth-child(8) { transform: translateZ(-24px); }
 
+    /* ===== Payment Modal ===== */
+    .payment-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .payment-modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .payment-modal-content {
+      background: #1a1a1a;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 500px;
+      width: 90%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    }
+
+    .payment-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .payment-modal-header h2 {
+      font-size: 1.5rem;
+      color: #fff;
+      margin: 0;
+    }
+
+    .payment-close {
+      background: none;
+      border: none;
+      color: #999;
+      font-size: 28px;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .payment-close:hover {
+      color: #fff;
+    }
+
+    .payment-options {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .payment-option {
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .payment-option:hover {
+      border-color: rgba(229, 9, 20, 0.5);
+      background-color: rgba(229, 9, 20, 0.05);
+    }
+
+    .payment-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .payment-option input[type="radio"]:checked + .payment-option-content {
+      color: #e50914;
+    }
+
+    .payment-option input[type="radio"]:checked ~ .payment-checkmark {
+      background: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+      border-color: #e50914;
+    }
+
+    .payment-option input[type="radio"]:checked ~ .payment-checkmark:after {
+      display: block;
+    }
+
+    .payment-checkmark {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      height: 24px;
+      width: 24px;
+      background-color: transparent;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .payment-checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+      left: 7px;
+      top: 3px;
+      width: 6px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .payment-option-content {
+      padding-right: 40px;
+    }
+
+    .payment-option-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #e5e5e5;
+      margin-bottom: 8px;
+    }
+
+    .payment-option-desc {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.5;
+    }
+
+    .payment-summary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .payment-summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      color: #e5e5e5;
+    }
+
+    .payment-summary-row:last-child {
+      margin-bottom: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 12px;
+      margin-top: 12px;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .payment-summary-label {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .payment-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .payment-actions button {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-payment-cancel {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e5e5e5;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-payment-cancel:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-payment-confirm {
+      background: linear-gradient(135deg, #e50914 0%, #b20710 100%);
+      color: #fff;
+    }
+
+    .btn-payment-confirm:hover:not(:disabled) {
+      box-shadow: 0 12px 40px rgba(229, 9, 20, 0.6);
+      transform: translateY(-2px);
+    }
+
+    .btn-payment-confirm:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     /* ===== Responsive ===== */
     @media (max-width: 768px) {
       .navbar {
@@ -698,6 +918,61 @@
     </div>
   </main>
 
+  <!-- Payment Modal -->
+  <div id="paymentModal" class="payment-modal">
+    <div class="payment-modal-content">
+      <div class="payment-modal-header">
+        <h2>💳 Select Payment Method</h2>
+        <button class="payment-close" id="closePaymentModal">&times;</button>
+      </div>
+
+      <div class="payment-summary">
+        <div class="payment-summary-row">
+          <span class="payment-summary-label">Total Amount:</span>
+          <span id="paymentTotalAmount">₹0</span>
+        </div>
+        <div class="payment-summary-row">
+          <span class="payment-summary-label">Seats:</span>
+          <span id="paymentSeats">-</span>
+        </div>
+      </div>
+
+      <form id="paymentForm">
+        <div class="payment-options">
+          <!-- Option 1: Payment on Arrival -->
+          <label class="payment-option">
+            <input type="radio" name="paymentMethod" value="on_arrival" required>
+            <div class="payment-option-content">
+              <div class="payment-option-title">💰 Pay on Arrival</div>
+              <div class="payment-option-desc">
+                Pay at the theater counter when you arrive. Your payment status will be <strong>PENDING</strong> until you complete the payment.
+              </div>
+            </div>
+            <span class="payment-checkmark"></span>
+          </label>
+
+          <!-- Option 2: QR Code Payment -->
+          <label class="payment-option">
+            <input type="radio" name="paymentMethod" value="qr_payment" required>
+            <div class="payment-option-content">
+              <div class="payment-option-title">📱 QR Code Payment</div>
+              <div class="payment-option-desc">
+                Scan a QR code to pay directly via your payment app. Instant confirmation and receipt.
+              </div>
+            </div>
+            <span class="payment-checkmark"></span>
+          </label>
+        </div>
+
+        <div class="payment-actions">
+          <button type="button" class="payment-actions button btn-payment-cancel" id="cancelPaymentBtn">Cancel</button>
+          <button type="button" class="btn-payment-confirm" id="confirmPaymentBtn" disabled>Confirm Payment</button>
+        </div>
+      </form>
+      <div id="qrContainer" style="display:none; text-align:center; margin-top:16px;"></div>
+    </div>
+  </div>
+
   <script>
     const seatingGrid = document.getElementById('seatingGrid');
     const selectedSeatsElement = document.getElementById('selectedSeats');
@@ -706,10 +981,21 @@
     const confirmBtn = document.getElementById('confirmBtn');
     const toggle3DBtn = document.getElementById('toggle3DBtn');
 
+    // Payment Modal Elements
+    const paymentModal = document.getElementById('paymentModal');
+    const closePaymentModal = document.getElementById('closePaymentModal');
+    const cancelPaymentBtn = document.getElementById('cancelPaymentBtn');
+    const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
+    const paymentForm = document.getElementById('paymentForm');
+    const paymentTotalAmount = document.getElementById('paymentTotalAmount');
+    const paymentSeats = document.getElementById('paymentSeats');
+
     const baseSeatPrice = <%- JSON.stringify(show && show.price ? show.price : 250) %>;
 
     let selectedSeats = [];
     let bookedSeats = [];
+    let currentBookingId = null;
+    let currentBookingData = null;
 
     async function initializeSeats() {
       try {
@@ -888,17 +1174,29 @@
           const result = await response.json();
           
           if (result.success) {
-            const emailStatusText = result.emailStatus || '📧 Processing confirmation email...';
-            alert(`✅ Booking Successful!\n🎫 Ticket ID: ${result.ticketId}\n💰 Total: ₹${result.totalAmount}\n${emailStatusText}\n\nRedirecting to My Bookings...`);
+            // Store booking data and show payment modal
+            currentBookingId = result.booking._id;
+            currentBookingData = result.booking;
             
-            localStorage.setItem('lastUsedEmail', userEmail);
+            // Update payment modal with booking details
+            // server returns `booking.totalAmount` so use that here
+            paymentTotalAmount.textContent = `₹${result.booking.totalAmount}`;
+            paymentSeats.textContent = Array.isArray(result.booking.seats) ? result.booking.seats.join(', ') : (result.booking.seats || '-');
             
-            // Redirect to my bookings page after 2 seconds
-            setTimeout(() => {
-              window.location.href = '/my-bookings';
-            }, 2000);
+            // Reset payment form
+            paymentForm.reset();
+            confirmPaymentBtn.disabled = true;
+            
+            // Show payment modal
+            paymentModal.classList.add('show');
+            
+            // Show initial alert
+            alert('✅ Booking Successful!\n\n📧 Confirmation email sent to: ' + userEmail + '\n\n💳 Now select your payment method...');
+            
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Book Now';
           } else {
-            alert('❌ Booking failed: ' + result.error);
+            alert('❌ Booking failed: ' + (result.message || result.error));
             confirmBtn.disabled = false;
             confirmBtn.textContent = 'Book Now';
           }
@@ -949,6 +1247,158 @@
       } catch (e) {
         console.error('Cancel booking error:', e);
         alert('❌ Network error while cancelling booking');
+      }
+    });
+
+    // ===== Payment Modal Handlers =====
+    
+    // Close payment modal
+    function closePayment() {
+      paymentModal.classList.remove('show');
+      paymentForm.reset();
+      confirmPaymentBtn.disabled = true;
+      currentBookingId = null;
+      currentBookingData = null;
+    }
+
+    // Close button
+    closePaymentModal.addEventListener('click', () => {
+      if (confirm('Are you sure you want to cancel the payment? Your booking will have pending payment status.')) {
+        closePayment();
+      }
+    });
+
+    // Cancel payment button
+    cancelPaymentBtn.addEventListener('click', () => {
+      if (confirm('Are you sure you want to cancel the payment? Your booking will have pending payment status.')) {
+        closePayment();
+      }
+    });
+
+    // Enable confirm button when payment method is selected
+    const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+    paymentRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        confirmPaymentBtn.disabled = false;
+      });
+    });
+
+    // Confirm payment button - new behavior:
+    // 1) When user first clicks after selecting a method, we call /payment/select-method.
+    //    - If method is 'on_arrival' we send pending email server-side and close modal.
+    //    - If method is 'qr_payment' the server returns a QR data URL; we display it and change the button to let the user mark payment completed.
+    // 2) When user clicks again after QR is shown (qrFlow active), we call /payment/confirm to mark as paid.
+    let qrFlowActive = false;
+
+    confirmPaymentBtn.addEventListener('click', async () => {
+      const selectedPaymentMethod = document.querySelector('input[name="paymentMethod"]:checked');
+      if (!selectedPaymentMethod && !qrFlowActive) {
+        alert('❌ Please select a payment method');
+        return;
+      }
+
+      if (!currentBookingId) {
+        alert('❌ Booking information not found');
+        return;
+      }
+
+      try {
+        confirmPaymentBtn.disabled = true;
+        confirmPaymentBtn.textContent = qrFlowActive ? 'Processing...' : 'Processing...';
+
+        if (!qrFlowActive) {
+          // Step 1: select method
+          const methodResponse = await fetch('/payment/select-method', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bookingId: currentBookingId, paymentMethod: selectedPaymentMethod.value })
+          });
+
+          const methodResult = await methodResponse.json();
+          if (!methodResult.success) {
+            alert('❌ Failed to set payment method: ' + (methodResult.message || methodResult.error));
+            confirmPaymentBtn.disabled = false;
+            confirmPaymentBtn.textContent = 'Confirm Payment';
+            return;
+          }
+
+          // If on arrival -> pending email already sent; close modal
+          if (selectedPaymentMethod.value === 'on_arrival') {
+            alert('✅ Payment pending. An email with payment instructions has been sent.');
+            localStorage.setItem('lastUsedEmail', document.getElementById('emailInput').value);
+            closePayment();
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Book Now';
+            // Redirect to my-bookings
+            console.log('Pay on Arrival selected, redirecting to my-bookings...');
+            window.location.href = '/my-bookings';
+            return;
+          }
+
+          // If QR payment, display the QR and let the user click again when they've paid
+          const qr = methodResult.booking && methodResult.booking.qrCode;
+          if (qr) {
+            const qrContainer = document.getElementById('qrContainer');
+            qrContainer.innerHTML = `<div style="text-align:center;"><p style="color:#e5e5e5; margin-bottom:8px;">Scan this QR with your payment app to pay</p><img src="${qr}" alt="Payment QR" style="max-width:260px; height:auto; border-radius:8px; border:1px solid rgba(255,255,255,0.06);"/></div>`;
+            qrContainer.style.display = 'block';
+            qrFlowActive = true;
+            confirmPaymentBtn.textContent = 'I Have Paid';
+            confirmPaymentBtn.disabled = false;
+            return;
+          } else {
+            // No QR returned - show message and close, then redirect
+            alert('✅ Payment pending. Please follow the instructions sent to your email.');
+            localStorage.setItem('lastUsedEmail', document.getElementById('emailInput').value);
+            closePayment();
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = 'Book Now';
+            // Redirect to my-bookings
+            console.log('No QR returned, redirecting to my-bookings...');
+            window.location.href = '/my-bookings';
+            return;
+          }
+        } else {
+          // qrFlowActive == true -> confirm payment now
+          const confirmResponse = await fetch('/payment/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bookingId: currentBookingId })
+          });
+          const confirmResult = await confirmResponse.json();
+          if (confirmResult.success) {
+            console.log('✅ Payment confirmed successfully');
+            console.log('Payment data:', confirmResult.booking);
+            localStorage.setItem('lastUsedEmail', document.getElementById('emailInput').value);
+            closePayment();
+            
+            // Show success message
+            alert(`✅ Payment Confirmed!\n\n🎫 Ticket ID: ${confirmResult.booking.ticketId || ''}\n💰 Amount: ₹${confirmResult.booking.totalAmount || ''}\n\n📧 Payment receipt sent to your email.`);
+            
+            // Redirect to my-bookings immediately after alert closes
+            console.log('Redirecting to my-bookings...');
+            window.location.href = '/my-bookings';
+            return;
+          } else {
+            alert('❌ Payment confirmation failed: ' + (confirmResult.message || confirmResult.error));
+            confirmPaymentBtn.disabled = false;
+            confirmPaymentBtn.textContent = 'I Have Paid';
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Payment error:', error);
+        alert('❌ Network error during payment! Please try again.');
+        confirmPaymentBtn.disabled = false;
+        confirmPaymentBtn.textContent = qrFlowActive ? 'I Have Paid' : 'Confirm Payment';
+      }
+    });
+
+    // Close modal when clicking outside
+    paymentModal.addEventListener('click', (e) => {
+      if (e.target === paymentModal) {
+        if (confirm('Are you sure you want to cancel the payment? Your booking will have pending payment status.')) {
+          closePayment();
+        }
       }
     });
 

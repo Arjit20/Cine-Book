@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.routes.js';
 import movieRoutes from './routes/movie.routes.js';
 import apiMovieRoutes from './routes/api.movies.js';
 import adminRoutes from './routes/admin.routes.js';
+import paymentRoutes from './routes/payment.routes.js';
 import Show from './models/show.models.js';
 import Movie from './models/movie.models.js';
 import Booking from './models/booking.models.js';
@@ -180,6 +181,9 @@ app.get('/seats/:movieId', (req, res) => {
 // Auth
 app.use('/auth', authRoutes);
 
+// Payment
+app.use('/payment', paymentRoutes);
+
 // Movies page
 app.get('/movies', async (req, res, next) => {
   try {
@@ -298,15 +302,23 @@ app.get('/admin', (req, res) => res.render('admin'));
 app.get('/movies/admin', (req, res) => res.redirect('/admin'));
 
 // Booking history
-app.get('/my-bookings', requireAuth, async (req, res) => {
+app.get('/my-bookings', authenticate, (req, res, next) => {
+  if (!req.user) {
+    return res.redirect(`/auth/login?redirect=/my-bookings`);
+  }
+  next();
+}, async (req, res) => {
   try {
+    console.log('📖 /my-bookings accessed by authenticated user:', req.user._id);
     const bookings = await Booking.find({ userId: req.user._id })
       .populate('movieId', 'title posterUrl')
       .populate('showId', 'timing')
       .sort({ bookingDate: -1 });
 
+    console.log('Found', bookings.length, 'bookings');
     res.render('myBookings', { bookings, user: req.user });
-  } catch {
+  } catch (err) {
+    console.error('Error loading my-bookings:', err);
     res.redirect('/movies');
   }
 });

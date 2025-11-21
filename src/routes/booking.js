@@ -35,12 +35,15 @@ router.post('/book', authenticate, requireAuth, async (req, res) => {
 			recipientEmail, // for ticket delivery
 			phoneNumber,
 			totalPrice: seats.length * show.price,
+			paymentStatus: 'pending', // Set to pending by default
+			paymentMethod: null, // Will be selected in payment flow
 		});
 		await booking.save();
 
 		show.bookedSeats.push(...seats);
 		await show.save();
 
+		// Send initial booking confirmation (not payment confirmation yet)
 		await sendBookingConfirmation(recipientEmail, {
 			showId,
 			seats: seats.join(', '),
@@ -51,8 +54,14 @@ router.post('/book', authenticate, requireAuth, async (req, res) => {
 
 		return res.json({
 			success: true,
-			message: 'Booking confirmed. Confirmation email sent.',
-			booking: { _id: booking._id, seats, recipientEmail, totalPrice: booking.totalPrice }
+			message: 'Booking confirmed. Please select payment method.',
+			booking: { 
+				_id: booking._id, 
+				seats, 
+				recipientEmail, 
+				totalPrice: booking.totalPrice,
+				paymentStatus: booking.paymentStatus
+			}
 		});
 	} catch (err) {
 		return res.status(500).json({ success: false, message: 'Booking failed', error: err.message });
